@@ -9,13 +9,16 @@ import sys
 
 
 class Singleton(type):
+
     def __call__(cls, *args, **kwargs):
+
         if '_instance' not in vars(cls):
             cls._instance = super(Singleton, cls).__call__(*args, **kwargs)
         else:
             def skip_init(self, *args, **kwargs):
                 pass
             cls.__init__ = skip_init
+
         return cls._instance
 
 
