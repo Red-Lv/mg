@@ -8,6 +8,8 @@
 import logging
 import logging.config
 
+from singleton import *
+
 
 class Logger(object):
     """the logger module for the frame
