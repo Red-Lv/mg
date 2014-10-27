@@ -48,6 +48,37 @@ class Logger(object):
 
         return True
 
+    def debug(self, *args, **kwargs):
+        """
+        """
+
+        self.logger.debug(*args, **kwargs)
+
+    def info(self, *args, **kwargs):
+        """
+        """
+
+        self.logger.info(*args, **kwargs)
+
+    def warning(self, *args, **kwargs):
+        """
+        """
+
+        self.wf_logger.warning(*args, **kwargs)
+
+    def error(self, *args, **kwargs):
+        """
+        """
+
+        self.wf_logger.error(*args, **kwargs)
+
+    def critical(self, *args, **kwargs):
+        """
+        """
+
+        self.wf_logger.critical(*args, **kwargs)
+
+
 if __name__ == '__main__':
 
     logger = Logger()
