@@ -61,6 +61,9 @@ class MySqlDB(AbstractDB):
 
         AbstractDB.__del__(self)
 
+        for conn in self.dbhandler_dict:
+            self.push_back_dbhandler(conn)
+
     def exit(self):
 
         AbstractDB.exit(self)
@@ -72,6 +75,7 @@ class MySqlDB(AbstractDB):
         """
 
         self.config = configobj.ConfigObj(config_path)
+        self.config = self.config['MySqlDB']
 
         return True
 
@@ -90,13 +94,13 @@ class MySqlDB(AbstractDB):
         if db_cluster_key not in self.config:
             return conn
 
-        db_cluster_config_list = self.config[db_cluster_key].sections()
-        db_cluster_config_index = random.randint(0, len(db_cluster_config_list) - 1)
-        db_cluster_config = db_cluster_config_list[db_cluster_config_index]
-        db_cluster_config['port'] = int(db_cluster_config['port'])
+        db_cluster_config = self.config[db_cluster_key]
+        db_cluster_config_section = random.sample(db_cluster_config.sections, 1)[0]
+        db_config = db_cluster_config[db_cluster_config_section]
+        db_config['port'] = int(db_cluster_config['port'])
 
         try:
-            conn = MySQLdb.connect(**db_cluster_config)
+            conn = MySQLdb.connect(**db_config)
             self.init_conn(conn)
             self.dbhandler_dict[conn] = conn
         except Exception as e:
@@ -114,7 +118,7 @@ class MySqlDB(AbstractDB):
 
         try:
             if conn in self.dbhandler_dict:
-                conn.close()
+                self.dbhandler_dict[conn].close()
         except Exception as e:
             pass
 
@@ -141,6 +145,9 @@ class MongoDB(AbstractDB):
 
         AbstractDB.__del__(self)
 
+        for db in self.dbhandler_dict:
+            self.push_back_dbhandler(db)
+
     def exit(self):
 
         AbstractDB.exit(self)
@@ -152,6 +159,7 @@ class MongoDB(AbstractDB):
         """
 
         self.config = configobj.ConfigObj(config_path)
+        self.config = self.config['MongoDB']
 
         return True
 
@@ -181,7 +189,7 @@ class MongoDB(AbstractDB):
 
     def fetch_dbhandler(self, db_cluster_key):
 
-        self.connect(db_cluster_key)
+        return self.connect(db_cluster_key)
 
     def push_back_dbhandler(self, db):
         """
@@ -197,17 +205,19 @@ class MongoDB(AbstractDB):
 
 if __name__ == '__main__':
 
-    mysql_db = MySQLdb()
+    mysql_db = MySqlDB()
     mongo_db = MongoDB()
 
     mysql_db.init('../conf/db.conf')
     mongo_db.init('../conf/db.conf')
 
     db = mongo_db.fetch_dbhandler('db_test')
-    for document in db.find():
+    for document in db.testcollection.find():
         print document
 
     mongo_db.push_back_dbhandler(db)
+
+    print '*' * 20
 
     conn = mysql_db.fetch_dbhandler('db_ori_even')
     cursor = conn.cursor()
