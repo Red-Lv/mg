@@ -84,5 +84,5 @@ if __name__ == '__main__':
     logger = Logger()
     logger.init('../conf/logger.conf')
 
-    logger.logger.info('everything is ok')
-    logger.wf_logger.error('something wrong')
+    logger.info('everything is ok')
+    logger.error('something wrong')
