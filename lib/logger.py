@@ -81,8 +81,13 @@ class Logger(object):
 
 if __name__ == '__main__':
 
+    import time
+
     logger = Logger()
     logger.init('../conf/logger.conf')
 
-    logger.info('everything is ok')
-    logger.error('something wrong')
+    for i in xrange(1000):
+        
+        time.sleep(1)
+        logger.logger.info('everything is ok, %s', i)
+        logger.wf_logger.error('something wrong, %s', i)
