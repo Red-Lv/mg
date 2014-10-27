@@ -97,7 +97,7 @@ class MySqlDB(AbstractDB):
         db_cluster_config = self.config[db_cluster_key]
         db_cluster_config_section = random.sample(db_cluster_config.sections, 1)[0]
         db_config = db_cluster_config[db_cluster_config_section]
-        db_config['port'] = int(db_cluster_config['port'])
+        db_config['port'] = int(db_config['port'])
 
         try:
             conn = MySQLdb.connect(**db_config)
