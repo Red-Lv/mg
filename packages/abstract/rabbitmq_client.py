@@ -41,8 +41,8 @@ class RabbitMQClient(AbstractModule):
         """
         """
 
-        self.mq_conn = pika.BlockingConnection(pika.ConnectionParameters(
-        host=self.config['host']))
+        mq_host, mq_port = self.config['rmq_client']['host'], self.config['rmq_client']['port']
+        self.mq_conn = pika.BlockingConnection(pika.ConnectionParameters(host=mq_host, port=mq_port))
 
         self.init_sub_client()
         self.init_pub_client()
@@ -53,12 +53,12 @@ class RabbitMQClient(AbstractModule):
 
         self.sub_channel = self.mq_conn.channel()
 
-        self.sub_exchange = self.config['rmq_client']['sub_exchange']
-        self.exchange_declare(exchange=self.sub_exchange, type='fanout')
+        sub_exchange = self.config['rmq_client']['sub_exchange']
+        self.sub_channel.exchange_declare(exchange=sub_exchange, type='fanout')
 
         result = self.sub_channel.queue_declare(exclusive=True)
         queue_name = result.method.queue
-        self.sub_channel.queue_bind(self.config['sub_exchange'], queue=queue_name)
+        self.sub_channel.queue_bind(exchange=sub_exchange, queue=queue_name)
 
         self.sub_channel.basic_consume(self.callback, queue=queue_name, no_ack=True)
 
@@ -70,8 +70,8 @@ class RabbitMQClient(AbstractModule):
 
         self.pub_channel = self.mq_conn.channel()
 
-        self.pub_exchange = self.config['rmq_client']['pub_exchange']
-        self.exchange_declare(exchange=self.pub_exchange, type='fanout')
+        pub_exchange = self.config['rmq_client']['pub_exchange']
+        self.exchange_declare(exchange=pub_exchange, type='fanout')
 
         return True
 
@@ -100,12 +100,13 @@ class RabbitMQClient(AbstractModule):
 if __name__ == '__main__':
 
     rmq_client = RabbitMQClient()
-    rmq_client.init('../conf/rmq_client.conf')
+    rmq_client.init('../../conf/rmq_client.conf')
 
     import time
     for i in xrange(100):
 
-        msg = 'Blowing in the wind. {0}'.format(i)
+        msg = 'blowing in the wind. {0}'.format(i)
+        print msg
         rmq_client.publish(msg)
 
         time.sleep(1)
