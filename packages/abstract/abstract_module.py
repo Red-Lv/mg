@@ -14,7 +14,7 @@ class AbstractModule(object):
 
     def __init__(self, *args, **kwargs):
 
-        pass
+        self.config = None
 
     def init(self, *args, **kwargs):
 
@@ -29,6 +29,8 @@ class AbstractModule(object):
 
     def exit(self, *args, **kwargs):
 
+        self.__del__()
+
         return True
 
     def read_config(self, config_path=None):
@@ -41,4 +43,3 @@ class AbstractModule(object):
         self.config = configobj.ConfigObj(config_path)
 
         return True
-
