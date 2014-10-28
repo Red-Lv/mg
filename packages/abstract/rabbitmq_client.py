@@ -18,6 +18,11 @@ class RabbitMQClient(AbstractModule):
 
         AbstractModule.__init__(self)
 
+        self.config = None
+        self.mq_conn = None
+        self.sub_channel = None
+        self.pub_channel = None
+
     def init(self, config_path=None):
 
         AbstractModule.init(self, config_path=config_path)
@@ -28,12 +33,14 @@ class RabbitMQClient(AbstractModule):
 
     def __del__(self):
 
-        try:
+        AbstractModule.__del__()
+
+        if self.mq_conn:
             self.mq_conn.close()
-        except Exception as e:
-            pass
 
     def exit(self):
+
+        self.__del__()
 
         return True
 
@@ -87,11 +94,19 @@ class RabbitMQClient(AbstractModule):
         """
         """
 
+        if not self.sub_channel:
+            return False
+
         self.sub_channel.start_consuming()
+
+        return True
 
     def publish(self, msg):
         """
         """
+
+        if not self.pub_channel:
+            return False
 
         pub_exchange = self.config['rmq_client']['pub_exchange']
         self.pub_channel.basic_publish(exchange=pub_exchange, routing_key='', body=msg)
