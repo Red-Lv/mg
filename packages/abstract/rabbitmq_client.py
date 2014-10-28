@@ -93,7 +93,8 @@ class RabbitMQClient(AbstractModule):
         """
         """
 
-        self.pub_channel.basic_publish(exchange=self.config['rmq_client']['pub_exchange'], routing_key='', body=msg)
+        pub_exchange = self.config['rmq_client']['pub_exchange']
+        self.pub_channel.basic_publish(exchange=pub_exchange, routing_key='', body=msg)
 
         return True
 
