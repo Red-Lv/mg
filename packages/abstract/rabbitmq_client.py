@@ -42,7 +42,7 @@ class RabbitMQClient(AbstractModule):
         """
 
         mq_host, mq_port = self.config['rmq_client']['host'], self.config['rmq_client']['port']
-        self.mq_conn = pika.BlockingConnection(pika.ConnectionParameters(host=mq_host, port=mq_port))
+        self.mq_conn = pika.BlockingConnection(pika.ConnectionParameters(host=mq_host, port=int(mq_port)))
 
         self.init_sub_client()
         self.init_pub_client()
@@ -71,7 +71,7 @@ class RabbitMQClient(AbstractModule):
         self.pub_channel = self.mq_conn.channel()
 
         pub_exchange = self.config['rmq_client']['pub_exchange']
-        self.exchange_declare(exchange=pub_exchange, type='fanout')
+        self.pub_channel.exchange_declare(exchange=pub_exchange, type='fanout')
 
         return True
 
@@ -93,7 +93,7 @@ class RabbitMQClient(AbstractModule):
         """
         """
 
-        self.pub_channel.basic_publish(exchange=self.pub_exchange, routing_key='', body=msg)
+        self.pub_channel.basic_publish(exchange=self.config['rmq_client']['pub_exchange'], routing_key='', body=msg)
 
         return True
 
