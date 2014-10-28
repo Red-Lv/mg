@@ -35,12 +35,10 @@ class RabbitMQClient(AbstractModule):
 
         AbstractModule.__del__()
 
-        if self.mq_conn:
-            self.mq_conn.close()
-
     def exit(self):
 
-        self.__del__()
+        if self.mq_conn:
+            self.mq_conn.close()
 
         return True
 

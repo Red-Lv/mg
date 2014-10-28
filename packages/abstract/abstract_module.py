@@ -31,8 +31,6 @@ class AbstractModule(object):
 
     def exit(self, *args, **kwargs):
 
-        self.__del__()
-
         return True
 
     def read_config(self, config_path=None):
