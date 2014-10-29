@@ -5,7 +5,7 @@
 # author: lvleibing01
 # desc:
 
-from globals import *
+from lib.globals import *
 from packages.abstract.rabbitmq_client import *
 from packages.concrete.msg_dispatcher import *
 
