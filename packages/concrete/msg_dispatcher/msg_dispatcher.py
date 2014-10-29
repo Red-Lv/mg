@@ -22,16 +22,16 @@ class MsgDispatcher(RabbitMQClient):
 
         RabbitMQClient.__init__(self)
 
-        self.msg_process = None
+        self.msg_processor = None
 
     def init(self, config_path=None):
 
         RabbitMQClient.init(self, config_path)
 
-        db = frame.mongo_db.fetch_dbhandler()
-        collection = db['msg_collection']
-        self.msg_process = MsgProcessor(collection, self.msg_router)
-        self.msg_process.init()
+        db = frame.mongo_db.fetch_dbhandler('db_msg')
+        collection = db['collection_msg']
+        self.msg_processor = MsgProcessor(collection, self.msg_router)
+        self.msg_processor.init()
 
         return True
 
@@ -48,6 +48,8 @@ class MsgDispatcher(RabbitMQClient):
     def callback(self, ch, method, properties, body):
         """
         """
+
+        self.msg_processor.add_task(msg)
 
         return True
 
