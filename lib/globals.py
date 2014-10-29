@@ -12,7 +12,7 @@ frame.init('./conf/frame.conf')
 
 
 LOG_DEBUG = frame.logger.logger.debug
-LOG_INFO = frame.logger.lgger.info
+LOG_INFO = frame.logger.logger.info
 
 LOG_WARNING = frame.logger.rwf_logger.warning
 LOG_DEBUG = frame.logger.wf_logger.error
