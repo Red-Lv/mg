@@ -11,26 +11,9 @@ frame = Frame()
 frame.init('./conf/frame.conf')
 
 
-def LOG_DEBUG(*args, **kwargs):
+LOG_DEBUG = frame.logger.debug
+LOG_INFO = frame.logger.info
 
-    frame.logger.debug(*args, **kwargs)
-
-
-def LOG_INFO(*args, **kwargs):
-
-    frame.logger.info(*args, **kwargs)
-
-
-def LOG_WARNING(*args, **kwargs):
-
-    frame.logger.warning(*args, **kwargs)
-
-
-def LOG_ERROR(*args, **kwargs):
-
-    frame.logger.error(*args, **kwargs)
-
-
-def LOG_CRITICAL(*args, **kwargs):
-
-    frame.logger.critical(*args, **kwargs)
+LOG_WARNING = frame.wf_logger.warning
+LOG_DEBUG = frame.wf_logger.error
+LOG_CRITICAL = frame.wf_logger.critical
