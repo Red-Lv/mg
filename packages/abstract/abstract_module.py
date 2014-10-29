@@ -7,7 +7,7 @@
 
 import configobj
 
-from lib.globals import *
+from lib.global import *
 
 
 class AbstractModule(object):
