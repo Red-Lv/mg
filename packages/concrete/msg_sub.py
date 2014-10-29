@@ -38,9 +38,12 @@ class MsgSub(RabbitMQClient):
 
     def callback(self, ch, method, properties, body):
 
-        print 'msg received: {0}'.format(body)
+        obj = json.loads(body)
 
-        LOG_INFO(body)
+        book_name = obj['book_name'].encode('GBK')
+        print 'msg received: {0}'.format(book_name)
+
+        LOG_INFO(book_name)
 
         return True
 
