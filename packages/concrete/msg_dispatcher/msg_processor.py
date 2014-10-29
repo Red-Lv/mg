@@ -8,8 +8,8 @@
 import time
 import threadpool
 
-from lib.singleton import *
 from lib.globals import *
+from lib.singleton import *
 
 
 class MsgProcessor(object):
