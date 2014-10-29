@@ -33,7 +33,7 @@ class RabbitMQClient(AbstractModule):
 
     def __del__(self):
 
-        AbstractModule.__del__()
+        AbstractModule.__del__(self)
 
     def exit(self):
 
@@ -56,9 +56,11 @@ class RabbitMQClient(AbstractModule):
         """
         """
 
-        self.sub_channel = self.mq_conn.channel()
-
         sub_exchange = self.config['rmq_client']['sub_exchange']
+        if not sub_exchange:
+            return False
+
+        self.sub_channel = self.mq_conn.channel()
         self.sub_channel.exchange_declare(exchange=sub_exchange, type='fanout')
 
         result = self.sub_channel.queue_declare(exclusive=True)
@@ -73,9 +75,11 @@ class RabbitMQClient(AbstractModule):
         """
         """
 
-        self.pub_channel = self.mq_conn.channel()
-
         pub_exchange = self.config['rmq_client']['pub_exchange']
+        if not pub_exchange:
+            return False
+
+        self.pub_channel = self.mq_conn.channel()
         self.pub_channel.exchange_declare(exchange=pub_exchange, type='fanout')
 
         return True
