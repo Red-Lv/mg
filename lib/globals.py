@@ -11,9 +11,9 @@ frame = Frame()
 frame.init('./conf/frame.conf')
 
 
-LOG_DEBUG = frame.logger.debug
-LOG_INFO = frame.logger.info
+LOG_DEBUG = frame.logger.logger.debug
+LOG_INFO = frame.logger.lgger.info
 
-LOG_WARNING = frame.wf_logger.warning
-LOG_DEBUG = frame.wf_logger.error
-LOG_CRITICAL = frame.wf_logger.critical
+LOG_WARNING = frame.logger.rwf_logger.warning
+LOG_DEBUG = frame.logger.wf_logger.error
+LOG_CRITICAL = frame.logger.wf_logger.critical
