@@ -43,7 +43,7 @@ class MsgPub(RabbitMQClient):
         dir_info_list = self.get_dir_info_list()
         for dir_info in dir_info_list:
             msg = json.loads(dir_info, encoding='GBK')
-            self.publish(msg)
+            RabbitMQClient.publish(self, msg.encode('UTF-8'))
             time.sleep(0.1)
 
         return True
