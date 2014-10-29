@@ -18,11 +18,11 @@ class MsgSub(RabbitMQClient):
 
     def __init__(self):
 
-        RabbitMQClient.__init__()
+        RabbitMQClient.__init__(self)
 
     def init(self, config_path=None):
 
-        RabbitMQClient.init(config_path)
+        RabbitMQClient.init(self, config_path)
 
         return True
 
@@ -32,15 +32,17 @@ class MsgSub(RabbitMQClient):
 
     def exit(self):
 
-        RabbitMQClient.exit()
+        RabbitMQClient.exit(self)
 
         return True
 
     def callback(self, ch, method, properties, body):
 
-        print 'msg received: {0}'.formt(body)
+        print 'msg received: {0}'.format(body)
 
         LOG_INFO(body)
+
+        return True
 
 if __name__ == '__main__':
 

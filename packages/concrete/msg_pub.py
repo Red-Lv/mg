@@ -18,11 +18,11 @@ class MsgPub(RabbitMQClient):
 
     def __init__(self):
 
-        RabbitMQClient.__init__()
+        RabbitMQClient.__init__(self)
 
     def init(self, config_path=None):
 
-        RabbitMQClient.init(config_path)
+        RabbitMQClient.init(self, config_path)
 
         self.mysql_db = frame.mysql_db
 
@@ -34,7 +34,7 @@ class MsgPub(RabbitMQClient):
 
     def exit(self):
 
-        RabbitMQClient.exit()
+        RabbitMQClient.exit(self)
 
         return True
 
