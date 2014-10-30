@@ -92,6 +92,9 @@ class RabbitMQClient(AbstractModule):
         channel.queue_bind(exchange=self.consumer_exchange.exchange_name, queue=queue_name,
                            routing_key=self.consumer_exchange.routing_key)
 
+        channel.basic_qos(prefetch_count=10)
+        channel.basic_consume(self.callback, queue=queue_name)
+
         self.consumer_channel_queue.put(channel)
 
         return True
@@ -112,9 +115,6 @@ class RabbitMQClient(AbstractModule):
         channel = self.producer_channel_queue.get()
         channel.exchange_declare(exchange=self.producer_exchange.exchange_name,
                                           type=self.producer_exchange.exchange_type)
-
-        channel.basic_qos(prefetch_count=10)
-        channel.basic_consume(self.callback, queue=queue_name)
 
         self.producer_channel_queue.put(channel)
 
