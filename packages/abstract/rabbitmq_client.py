@@ -25,9 +25,9 @@ class RabbitMQClient(AbstractModule):
     """Abstract RabbitMQ client
     """
 
-    def __init__(self):
+    def __init__(self, consumer_channel_no=1, producer_channel_no=20):
 
-        AbstractModule.__init__(self, consumer_channel_no=1, producer_channel_no=20)
+        AbstractModule.__init__(self)
 
         self.config = None
 
@@ -36,7 +36,7 @@ class RabbitMQClient(AbstractModule):
         self.mq_conn = None
 
         self.consumer_channel_no = consumer_channel_no
-        self.producer_channel_no = consumer_channel_no
+        self.producer_channel_no = producer_channel_no
 
         self.consumer_channel_queue = Queue.Queue()
         self.producer_channel_queue = Queue.Queue()
@@ -106,7 +106,7 @@ class RabbitMQClient(AbstractModule):
         if not self.producer_channel_no or not self.producer_exchange.exchange_name:
             return False
 
-        for i in xrange(self.consumer_channel_no):
+        for i in xrange(self.producer_channel_no):
             self.producer_channel_queue.put(self.mq_conn.channel())
 
         channel = self.producer_channel_queue.get()
