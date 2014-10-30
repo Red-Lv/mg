@@ -12,7 +12,7 @@ from packages.abstract.abstract_module import *
 from packages.abstract.rabbitmq_client import *
 
 
-class MsgSub(RabbitMQClient):
+class MsgConsumer(RabbitMQClient):
     """
     """
 
@@ -49,7 +49,7 @@ class MsgSub(RabbitMQClient):
 
 if __name__ == '__main__':
 
-    msg_sub = MsgSub()
-    msg_sub.init('./conf/msg_sub.conf')
+    msg_consumer = MsgConsumer()
+    msg_consumer.init('./conf/msg_consumer.conf')
 
-    msg_sub.consume()
+    msg_consumer.consume()

@@ -12,7 +12,7 @@ from packages.abstract.abstract_module import *
 from packages.abstract.rabbitmq_client import *
 
 
-class MsgPub(RabbitMQClient):
+class MsgProducer(RabbitMQClient):
     """
     """
 
@@ -43,7 +43,7 @@ class MsgPub(RabbitMQClient):
         dir_info_list = self.get_dir_info_list()
         for dir_info in dir_info_list:
             msg = json.dumps(dir_info, encoding='GBK', ensure_ascii=False)
-            RabbitMQClient.publish(self, msg.encode('UTF-8'))
+            RabbitMQClient.publish(self, body=msg.encode('UTF-8'))
             time.sleep(0.1)
 
         return True
@@ -67,7 +67,7 @@ class MsgPub(RabbitMQClient):
 
 if __name__ == '__main__':
 
-    msg_pub = MsgPub()
-    msg_pub.init('./conf/msg_pub.conf')
+    msg_producer = MsgProduer()
+    msg_producer.init('./conf/msg_producer.conf')
 
-    msg_pub.publish()
+    msg_producer.publish()
