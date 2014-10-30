@@ -6,8 +6,10 @@
 # desc:
 
 from lib.globals import *
+from lib.singleton import *
+
 from packages.abstract.rabbitmq_client import *
-from packages.concrete.msg_dispatcher import *
+from packages.concrete.msg_dispatcher.msg_processor import *
 
 
 class MsgDispatcher(RabbitMQClient):
@@ -15,8 +17,10 @@ class MsgDispatcher(RabbitMQClient):
 
     task:
     1¡¢store the message
-    2¡¢route the message to dispatcher or to message_sender
+    2¡¢route the message to message_timer or to message_sender
     """
+
+    __metaclass__ = Singleton
 
     def __init__(self):
 
@@ -28,10 +32,8 @@ class MsgDispatcher(RabbitMQClient):
 
         RabbitMQClient.init(self, config_path)
 
-        db = frame.mongo_db.fetch_dbhandler('db_msg')
-        collection = db['collection_msg']
-        self.msg_processor = MsgProcessor(collection, self.msg_router)
-        self.msg_processor.init()
+        self.msg_processor = MsgProcessor()
+        self.msg_processor.init(self)
 
         return True
 
@@ -49,20 +51,6 @@ class MsgDispatcher(RabbitMQClient):
         """
         """
 
-        self.msg_processor.add_task(msg)
-
-        return True
-
-    def msg_router(self, msg, time_set=0):
-        """
-        """
-
-        if time_set:
-            # @TODO
-            self.publish(msg)
-        else:
-            # @TODO
-            #self.publish(self.config['direct_pub_exchange'], msg)
-            pass
+        self.msg_processor.add_task(body)
 
         return True
