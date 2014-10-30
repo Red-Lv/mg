@@ -6,6 +6,7 @@
 # desc:
 
 from lib.frame import *
+from lib.utility import *
 
 frame = Frame()
 frame.init('./conf/frame.conf')
