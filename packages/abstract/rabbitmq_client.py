@@ -50,8 +50,11 @@ class RabbitMQClient(AbstractModule):
 
     def exit(self):
 
-        if self.mq_conn:
-            self.mq_conn.close()
+        if self.consumer_conn:
+            self.consumer_conn.close()
+
+        if self.producer_conn:
+            self.producer_conn.close()
 
         return True
 
@@ -75,8 +78,8 @@ class RabbitMQClient(AbstractModule):
         if not self.consumer_exchange.exchange_name:
             return False
 
-        conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, port=self.port))
-        self.consumer_channel = conn.channel()
+        self.consumer_conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, port=self.port))
+        self.consumer_channel = self.consumer_conn.channel()
         self.consumer_channel.exchange_declare(exchange=self.consumer_exchange.exchange_name,
                                                type=self.consumer_exchange.exchange_type)
 
@@ -99,8 +102,8 @@ class RabbitMQClient(AbstractModule):
         if not self.producer_exchange.exchange_name:
             return False
 
-        conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, port=self.port))
-        self.producer_channel = conn.channel()
+        self.producer_conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, port=self.port))
+        self.producer_channel = self.producer_conn.channel()
         self.producer_channel.exchange_declare(exchange=self.producer_exchange.exchange_name,
                                                type=self.producer_exchange.exchange_type)
 
