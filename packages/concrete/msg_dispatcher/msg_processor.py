@@ -12,8 +12,6 @@ import threadpool
 from lib.globals import *
 from lib.singleton import *
 
-from packages.concrete.msg_dispatcher.msg_dispatcher import *
-
 
 class MsgProcessor(object):
     """
