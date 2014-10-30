@@ -54,3 +54,10 @@ class MsgDispatcher(RabbitMQClient):
         self.msg_processor.add_task(body)
 
         return True
+
+if __name__ == '__main__':
+
+    msg_dispatcher = MsgDispatcher()
+    msg_dispatcher.init('./conf/msg_dispatcher.conf')
+
+    msg_dispatcher.consume()
