@@ -151,7 +151,7 @@ class RabbitMQClient(AbstractModule):
         if exchange is None:
             exchange = self.producer_exchange.exchange_name
 
-        self.producer_channel.basic_publish(exchange=exchange, routing_key=routing_key, body=body)
+        producer_channel.basic_publish(exchange=exchange, routing_key=routing_key, body=body)
 
         self.producer_channel_queue.put(channel)
 
