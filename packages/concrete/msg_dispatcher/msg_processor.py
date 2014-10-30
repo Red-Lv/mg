@@ -109,9 +109,8 @@ class MsgProcessor(object):
         collection = self.db['collection_msg']
 
         spec = {'appid': msg_obj['appid'], 'eid': msg_obj['eid']}
-        msg = msg_obj.encode('UTF-8')
 
-        collection.update(spec, msg, upsert=True)
+        collection.update(spec, msg_obj, upsert=True)
 
         return True
 
@@ -121,14 +120,12 @@ class MsgProcessor(object):
         msg_obj: json in unicode
         """
 
-        msg = msg_obj.encode('UTF-8')
+        msg = json_to_str(msg_obj)
 
         time_set = msg_obj.get('time_set', 0)
         if time_set:
-            # @TODO
-            self.msg_dispatcher.publish(msg)
+            self.msg_dispatcher.publish(body=msg)
         else:
-            # @TODO
-            pass
+            self.msg_dispatcher.publish(body=msg)
 
         return True
