@@ -53,6 +53,8 @@ class MsgDispatcher(RabbitMQClient):
 
         self.msg_processor.add_task(body)
 
+        ch.basic_ack(delivery_tag = method.delivery_tag)
+
         return True
 
 if __name__ == '__main__':
