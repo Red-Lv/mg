@@ -57,9 +57,12 @@ class RabbitMQClient(AbstractModule):
         """
 
         exchange = self.config['rmq_client']['consumer_exchange']
-        exchange_type = exchange['type']
         exchange_name = exchange['name']
         routing_key = exchange['routing_key']
+        exchange_type = exchange['type']
+
+        if not exchange_name:
+            return False
 
         self.consumer_channel = self.mq_conn.channel()
         self.consumer_channel.exchange_declare(exchange=exchange_name, type=exchange_type)
@@ -77,9 +80,12 @@ class RabbitMQClient(AbstractModule):
         """
 
         exchange = self.config['rmq_client']['producer_exchange']
-        exchange_type = exchange['type']
         exchange_name = exchange['name']
         routing_key = exchange['routing_key']
+        exchange_type = exchange['type']
+
+        if not exchange_name:
+            return False
 
         self.producer_channel = self.mq_conn.channel()
         self.producer_channel.exchange_declare(exchange=exchange_name, type=exchange_type)
