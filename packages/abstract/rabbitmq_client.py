@@ -29,9 +29,12 @@ class RabbitMQClient(AbstractModule):
         AbstractModule.__init__(self)
 
         self.config = None
+
+        self.host = ''
+        self.port = 0
         self.mq_conn = None
-        self.sub_channel = None
-        self.pub_channel = None
+        self.consumer_channel = None
+        self.producer_channel = None
 
     def init(self, config_path=None):
 
@@ -56,8 +59,8 @@ class RabbitMQClient(AbstractModule):
         """
         """
 
-        mq_host, mq_port = self.config['rmq_client']['host'], self.config['rmq_client']['port']
-        self.mq_conn = pika.BlockingConnection(pika.ConnectionParameters(host=mq_host, port=int(mq_port)))
+        self.host = self.config['rmq_client']['host']
+        self.port = int(self.config['rmq_client']['port'])
 
         self.init_consumer_client()
         self.init_producer_client()
@@ -72,7 +75,8 @@ class RabbitMQClient(AbstractModule):
         if not self.consumer_exchange.exchange_name:
             return False
 
-        self.consumer_channel = self.mq_conn.channel()
+        conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, port=self.port))
+        self.consumer_channel = conn.channel()
         self.consumer_channel.exchange_declare(exchange=self.consumer_exchange.exchange_name,
                                                type=self.consumer_exchange.exchange_type)
 
@@ -95,7 +99,8 @@ class RabbitMQClient(AbstractModule):
         if not self.producer_exchange.exchange_name:
             return False
 
-        self.producer_channel = self.mq_conn.channel()
+        conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, port=self.port))
+        self.producer_channel = conn.channel()
         self.producer_channel.exchange_declare(exchange=self.producer_exchange.exchange_name,
                                                type=self.producer_exchange.exchange_type)
 
