@@ -11,6 +11,6 @@ import json
 def json_to_str(obj, obj_encoding='UTF-8', str_encoding='UTF-8'):
 
     try:
-        return json.dumps(obj, encoding=encoding, ensure_ascii=False).encoding(str_encoding)
+        return json.dumps(obj, encoding=obj_encoding, ensure_ascii=False).encode(str_encoding)
     except Exception as e:
         return ''
