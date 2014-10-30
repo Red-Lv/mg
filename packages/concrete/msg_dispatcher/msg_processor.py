@@ -5,11 +5,14 @@
 # author: lvleibing01
 # desc:
 
+import json
 import time
 import threadpool
 
 from lib.globals import *
 from lib.singleton import *
+
+from packages.concrete.msg_dispatcher.msg_dispatcher import *
 
 
 class MsgProcessor(object):
@@ -18,14 +21,22 @@ class MsgProcessor(object):
 
     __metaclass__ = Singleton
 
-    def __init__(self, collection=None, msg_router=None):
+    def __init__(self):
 
-        self.collection = collection
-        self.msg_router = msg_router
+        self.msg_dispatcher = None
+        self.db = None
 
-    def init(self, pool_size=20):
+        self.pool_size = 20
+        self.thread_pool = None
 
-        if not collection:
+    def init(self, msg_dispatcher=None, pool_size=20):
+
+        self.msg_dispatcher = msg_dispatcher
+        if not self.msg_dispatcher:
+            return False
+
+        self.db = frame.mongo_db.fetch_dbhandler('db_test')
+        if not self.db:
             return False
 
         self.pool_size = pool_size
@@ -34,6 +45,8 @@ class MsgProcessor(object):
         return True
 
     def __del__(self):
+
+        MsgDispatcher.__del__()
 
         pass
 
@@ -63,21 +76,21 @@ class MsgProcessor(object):
             msg_obj = json.loads(msg)
         except Exception as e:
             msg_obj = None
-            LOG_WARNING('fail to loads msg to json. msg: %s', msg)
+            LOG_WARNING('fail to load msg to json. msg: %s', msg)
             return False
 
-        if 'appid' not in msg_obj or 'eid' in msg_obj:
+        if 'appid' not in msg_obj or 'eid' not in msg_obj:
             LOG_WARNING('msg does not have appid or eid. msg: %s', msg)
             return False
 
         LOG_INFO('start processing msg.')
         timestamp_s = int(time.time())
 
-        self.dump_msg({'appid': msg_obj['appid'], 'eid': msg_obj['eid']}, msg)
+        # dump msg
+        self.dump_msg(msg_obj)
 
-        # route msg according to time_set value
-        time_set = msg.get('time_set', 0)
-        self.msg_router(msg, time_set)
+        # route msg
+        self.route_msg(msg_obj)
 
         timestamp_e = int(time.time())
         time_cost = timestamp_e - timestamp_s
@@ -85,10 +98,39 @@ class MsgProcessor(object):
 
         return True
 
-    def dump_msg(self, spec, msg):
-        """
+    def dump_msg(self, msg_obj):
         """
 
-        self.collection.update(spec, msg, upsert=True)
+        msg_obj: json in unicode
+        """
+
+        if not self.db:
+            LOG_WARNING('the db is None')
+            return False
+
+        collection = self.db['collection_msg']
+
+        spec = {'appid': msg_obj['appid'], 'eid': msg_obj['eid']}
+        msg = msg_obj.encode('UTF-8')
+
+        collection.update(spec, msg, upsert=True)
+
+        return True
+
+    def route_msg(self, msg_obj):
+        """
+
+        msg_obj: json in unicode
+        """
+
+        msg = msg_obj.encode('UTF-8')
+
+        time_set = msg_obj.get('time_set', 0)
+        if time_set:
+            # @TODO
+            self.msg_dispatcher.publish(msg)
+        else:
+            # @TODO
+            pass
 
         return True
