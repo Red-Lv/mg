@@ -92,11 +92,11 @@ class RabbitMQClient(AbstractModule):
         exchange_config = self.config['rmq_client']['producer_exchange']
         self.producer_exchange = Exchange(**exchange_config)
 
-        if not self.producer_channel.exchange_name:
+        if not self.producer_exchange.exchange_name:
             return False
 
         self.producer_channel = self.mq_conn.channel()
-        self.producer_channel.exchange_declare(exchange=self.producer_channel.exchange_name,
+        self.producer_channel.exchange_declare(exchange=self.producer_exchange.exchange_name,
                                                type=self.producer_exchange.exchange_type)
 
         return True
@@ -113,16 +113,24 @@ class RabbitMQClient(AbstractModule):
         """
         """
 
-        self.sub_channel.start_consuming()
+        if not self.consumer_channel:
+            return False
+
+        self.consumer_channel.start_consuming()
 
         return True
 
-    def publish(self, routing_key='', body=''):
+    def publish(self, exchange=None, routing_key='', body=''):
         """
         """
 
-        self.pub_channel.basic_publish(exchange=self.producer_exchange.exchange_name,
-                                       routing_key=routing_key, body=body)
+        if not self.producer_channel:
+            return False
+
+        if exchange is None:
+            exchange = self.producer_exchange.exchange_name
+
+        self.producer_channel.basic_publish(exchange=exchange, routing_key=routing_key, body=body)
 
         return True
 
