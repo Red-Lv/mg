@@ -6,7 +6,6 @@
 # desc:
 
 import pika
-import Queue
 
 from abstract_module import *
 
@@ -25,7 +24,7 @@ class RabbitMQClient(AbstractModule):
     """Abstract RabbitMQ client
     """
 
-    def __init__(self, consumer_channel_no=1, producer_channel_no=20):
+    def __init__(self):
 
         AbstractModule.__init__(self)
 
@@ -35,11 +34,8 @@ class RabbitMQClient(AbstractModule):
         self.port = 0
         self.mq_conn = None
 
-        self.consumer_channel_no = consumer_channel_no
-        self.producer_channel_no = producer_channel_no
-
-        self.consumer_channel_queue = Queue.Queue()
-        self.producer_channel_queue = Queue.Queue()
+        self.consumer_channel = None
+        self.producer_channel = None
 
     def init(self, config_path=None):
 
@@ -77,25 +73,20 @@ class RabbitMQClient(AbstractModule):
         exchange_config = self.config['rmq_client']['consumer_exchange']
         self.consumer_exchange = Exchange(**exchange_config)
 
-        if not self.consumer_channel_no or not self.consumer_exchange.exchange_name:
+        if not self.consumer_exchange.exchange_name:
             return False
 
-        for i in xrange(self.consumer_channel_no):
-            self.consumer_channel_queue.put(self.mq_conn.channel())
+        self.consumer_channel = self.mq_conn.channel()
+        self.consumer_channel.exchange_declare(exchange=self.consumer_exchange.exchange_name,
+                                               type=self.consumer_exchange.exchange_type)
 
-        channel = self.consumer_channel_queue.get()
-        channel.exchange_declare(exchange=self.consumer_exchange.exchange_name,
-                                 type=self.consumer_exchange.exchange_type)
-
-        result = channel.queue_declare(exclusive=True)
+        result = self.consumer_channel.queue_declare(exclusive=True)
         queue_name = result.method.queue
-        channel.queue_bind(exchange=self.consumer_exchange.exchange_name, queue=queue_name,
-                           routing_key=self.consumer_exchange.routing_key)
+        self.consumer_channel.queue_bind(exchange=self.consumer_exchange.exchange_name, queue=queue_name,
+                                         routing_key=self.consumer_exchange.routing_key)
 
-        channel.basic_qos(prefetch_count=10)
-        channel.basic_consume(self.callback, queue=queue_name)
-
-        self.consumer_channel_queue.put(channel)
+        self.consumer_channel.basic_qos(prefetch_count=10)
+        self.consumer_channel.basic_consume(self.callback, queue=queue_name)
 
         return True
 
@@ -106,17 +97,12 @@ class RabbitMQClient(AbstractModule):
         exchange_config = self.config['rmq_client']['producer_exchange']
         self.producer_exchange = Exchange(**exchange_config)
 
-        if not self.producer_channel_no or not self.producer_exchange.exchange_name:
+        if not self.producer_exchange.exchange_name:
             return False
 
-        for i in xrange(self.producer_channel_no):
-            self.producer_channel_queue.put(self.mq_conn.channel())
-
-        channel = self.producer_channel_queue.get()
-        channel.exchange_declare(exchange=self.producer_exchange.exchange_name,
-                                          type=self.producer_exchange.exchange_type)
-
-        self.producer_channel_queue.put(channel)
+        self.producer_channel = self.mq_conn.channel()
+        self.producer_channel.exchange_declare(exchange=self.producer_exchange.exchange_name,
+                                               type=self.producer_exchange.exchange_type)
 
         return True
 
@@ -133,12 +119,10 @@ class RabbitMQClient(AbstractModule):
         """
 
         self.init_consumer_client()
+        if not self.consumer_channel:
+            return False
 
-        channel = self.consumer_channel_queue.get()
-
-        channel.start_consuming()
-
-        self.consumer_channel_queue.put(channel)
+        self.consumer_channel.start_consuming()
 
         return True
 
@@ -146,14 +130,13 @@ class RabbitMQClient(AbstractModule):
         """
         """
 
-        channel = self.producer_channel_queue.get()
+        if not self.producer_channel:
+            return False
 
         if exchange is None:
             exchange = self.producer_exchange.exchange_name
 
-        channel.basic_publish(exchange=exchange, routing_key=routing_key, body=body)
-
-        self.producer_channel_queue.put(channel)
+        self.producer_channel.basic_publish(exchange=exchange, routing_key=routing_key, body=body)
 
         return True
 
