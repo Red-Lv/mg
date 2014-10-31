@@ -5,6 +5,9 @@
 # author: lvleibing01
 # desc:
 
+import Queue
+import threading
+
 from lib.globals import *
 from lib.singleton import *
 
@@ -35,6 +38,8 @@ class MsgDispatcher(RabbitMQClient):
         self.msg_processor = MsgProcessor()
         self.msg_processor.init(self)
 
+        self.msg_to_publish = Queue.Queue()
+
         return True
 
     def __del__(self):
@@ -53,13 +58,43 @@ class MsgDispatcher(RabbitMQClient):
 
         self.msg_processor.add_task(body)
 
-        ch.basic_ack(delivery_tag = method.delivery_tag)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
         return True
+
+    def publish(self):
+        """
+        """
+
+        while True:
+
+            routing_key, msg = self.msg_to_publish.get()
+            RabbitMQClient.publish(routing_key=routing_key, body=msg)
+
+        return True
+
+    def consume(self):
+        """
+        """
+
+        RabbitMQClient.consume(self)
+
+    def run(self):
+        """
+        """
+
+        # invoke the publish thread
+        threading.Thread(target=self.publish).start()
+
+        # invoke the consume thread
+        self.consume()
+
+        return True
+
 
 if __name__ == '__main__':
 
     msg_dispatcher = MsgDispatcher()
     msg_dispatcher.init('./conf/msg_dispatcher.conf')
 
-    msg_dispatcher.consume()
+    msg_dispatcher.run()
