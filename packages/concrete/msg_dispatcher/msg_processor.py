@@ -124,8 +124,8 @@ class MsgProcessor(object):
 
         time_set = msg_obj.get('time_set', 0)
         if time_set:
-            self.msg_dispatcher.publish(body=msg)
+            self.msg_dispatcher.msg_to_publish.put(('red', msg))
         else:
-            self.msg_dispatcher.publish(body=msg)
+            self.msg_dispatcher.msg_to_publish.put(('red', msg))
 
         return True
