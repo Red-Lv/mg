@@ -96,7 +96,8 @@ class EntityAggregationToolkit(object):
         self.dump_entity_identity(appid, unique_key, eid)
         self.dump_entity_agg(entity)
 
-        self.pack_msg(entity)
+        if entity_status == 0:
+            self.pack_msg(entity)
 
         return True
 
@@ -133,7 +134,8 @@ class EntityAggregationToolkit(object):
         value_from_entity = entity.get(field_mark_status)
         value_from_material = material.get(field_mark_status)
 
-        status_update_func = getattr(self, config.get('status_update_func'), 'check_status_by_value_increment')
+
+        status_update_func = getattr(self, config.get('status_update_func', 'check_status_by_value_increment'), None)
         if not callable(status_update_func):
             return 2
 
@@ -141,9 +143,9 @@ class EntityAggregationToolkit(object):
         # the name of the field can be tuned.
         field_value_enumerated = config.get('field_value_enumerated', [])
 
-        is_update = status_update_func(value_from_entity, value_from_material, field_value_enumerated)
+        is_update = status_update_func(value_from_entity, value_from_material, field_value_enumerated=field_value_enumerated)
 
-        return 0
+        return 0 if is_update else 3
 
     def dump_entity_identity(self, appid, unique_key, eid):
         """
