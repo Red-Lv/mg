@@ -5,6 +5,7 @@
 # author: lvleibing01
 # desc:
 
+import time
 import xml.etree.ElementTree as ET
 
 from lib.globals import *
@@ -150,7 +151,7 @@ class MaterialParser(RabbitMQClient):
 
         parser = getattr(self, parser, None)
         if not parser or not callable(parser):
-            return Fasle
+            return False
 
         parser(material)
 
