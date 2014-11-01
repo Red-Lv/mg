@@ -190,6 +190,7 @@ class MaterialParser(RabbitMQClient):
             material_data['formal_title'] = getattr(root.find('formal_title'), 'text', '')
             material_data['author'] = getattr(root.find('author'), 'text', '')
             material_data['logo'] = getattr(root.find('logo'), 'text', '')
+            material_data['status'] = getattr(root.find('status'), 'text', '')
 
             last_content = root.find('icon')
             if last_content is not None:
