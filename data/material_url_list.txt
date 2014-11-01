@@ -1,1 +1,12 @@
 http://ac.qq.com/data/aladdin_m.xml
+
+http://s.imanhua.com/open/m1.xml
+http://s.imanhua.com/open/m2.xml
+http://s.imanhua.com/open/m3.xml
+
+http://comic.u17.com/baidu_comic_mobile_xml.php?i=0
+http://comic.u17.com/baidu_comic_mobile_xml.php?i=1
+http://comic.u17.com/baidu_comic_mobile_xml.php?i=2
+http://comic.u17.com/baidu_comic_mobile_xml.php?i=3
+http://comic.u17.com/baidu_comic_mobile_xml.php?i=4
+
