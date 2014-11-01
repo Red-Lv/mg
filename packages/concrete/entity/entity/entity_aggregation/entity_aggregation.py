@@ -35,7 +35,7 @@ class EntityAggregation(RabbitMQClient):
 
         self.entity_aggregation_toolkit.init(self.config['entity_aggregation_toolkit'])
 
-        self.pool_size = self.config['entity_aggregation'].get('pool_size', self.pool_size)
+        self.pool_size = int(self.config['entity_aggregation'].get('pool_size', self.pool_size))
         self.thread_pool = threadpool.ThreadPool(self.pool_size)
 
         return True
@@ -52,7 +52,7 @@ class EntityAggregation(RabbitMQClient):
 
     def callback(self, ch, method, properties, body):
 
-        request = threadpool.makeRequests(self.process_msg, (msg,))[0]
+        request = threadpool.makeRequests(self.entity_aggregation_toolkit.aggregate_material_to_entity, (body,))[0]
         self.thread_pool.putRequest(request)
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -66,7 +66,7 @@ class EntityAggregation(RabbitMQClient):
         while True:
 
             routing_key, msg = self.msg_to_publish.get()
-            RabbitMQClient.publish(routing_key=routing_key, body=msg)
+            RabbitMQClient.publish(self, routing_key=routing_key, body=msg)
 
         return True
 

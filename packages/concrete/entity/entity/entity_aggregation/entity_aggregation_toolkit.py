@@ -50,8 +50,8 @@ class EntityAggregationToolkit(object):
 
     def init_db(self):
 
-        self.entity_identity_db = frame.mongo_db.fetch_dbhandler('entity_identity_db')
-        self.entity_agg_db = frame.mongo_db.fetch_dbhandler('entity_agg_db')
+        self.entity_identity_db = frame.mongo_db.fetch_dbhandler('db_entity_identity')
+        self.entity_agg_db = frame.mongo_db.fetch_dbhandler('db_entity_agg')
 
         return True
 
@@ -60,11 +60,13 @@ class EntityAggregationToolkit(object):
         """
 
         try:
-            material_obj = json.loads(material)
+            material= json.loads(material)
         except Exception as e:
             return False
 
-        appid = material_obj.get('appid')
+        LOG_INFO('url: %s', material['url'])
+
+        appid = material.get('appid')
         if appid is None:
             return False
 
@@ -76,7 +78,7 @@ class EntityAggregationToolkit(object):
         if me_relation == self.ME_RELATION_MULTI_TO_ONE:
             return False
 
-        unique_key = material_obj.get('unique_key') or material_obj.get('url')
+        unique_key = material.get('unique_key') or material.get('url')
         if not unique_key:
             return False
 
@@ -85,8 +87,8 @@ class EntityAggregationToolkit(object):
 
         entity = self.fetch_entity_agg(appid, eid)
 
-        is_update = self.check_entity_status(entity, material)
-        if not is_update:
+        entity_status = self.check_entity_status(entity, material)
+        if entity_status != 0 and entity_status != 1:
             return False
 
         entity = material
@@ -118,19 +120,22 @@ class EntityAggregationToolkit(object):
         """
         """
 
+        if not entity:
+            return 1
+        
         appid = material['appid']
         config = self.config['appid_{0}'.format(appid)]
 
         field_mark_status = config.get('field_mark_status')
         if not field_mark_status:
-            return False
+            return 2
 
         value_from_entity = entity.get(field_mark_status)
         value_from_material = material.get(field_mark_status)
 
         status_update_func = getattr(self, config.get('status_update_func'), 'check_status_by_value_increment')
         if not callable(status_update_func):
-            return False
+            return 2
 
         # @TODO
         # the name of the field can be tuned.
@@ -138,7 +143,7 @@ class EntityAggregationToolkit(object):
 
         is_update = status_update_func(value_from_entity, value_from_material, field_value_enumerated)
 
-        return is_update
+        return 0
 
     def dump_entity_identity(self, appid, unique_key, eid):
         """

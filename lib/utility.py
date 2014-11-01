@@ -9,6 +9,8 @@ import codecs
 import json
 import requests
 
+from binascii import crc32
+
 
 def json_to_str(obj, obj_encoding='UTF-8', str_encoding='UTF-8'):
 
@@ -68,4 +70,4 @@ def calc_eid(url):
     # @TODO
     # to be more precisely
 
-    return len(url)
+    return (crc32(url) & 0xFFFFFFFF)
