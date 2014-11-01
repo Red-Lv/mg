@@ -9,10 +9,9 @@ import Queue
 import threading
 
 from lib.globals import *
-from lib.singleton import *
 
 from packages.abstract.rabbitmq_client import *
-from packages.concrete.msg_dispatcher.msg_processor import *
+from packages.concrete.message.msg_dispatcher.msg_processor import *
 
 
 class MsgDispatcher(RabbitMQClient):

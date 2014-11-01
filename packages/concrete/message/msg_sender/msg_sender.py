@@ -7,7 +7,6 @@
 
 from lib.globals import *
 from packages.abstract.rabbitmq_client import *
-from packages.concrete.msg_dispatcher import *
 
 
 class MsgSender(RabbitMQClient):
