@@ -216,3 +216,10 @@ class MaterialParser(RabbitMQClient):
             RabbitMQClient.publish(self, body=json_to_str(material_data))
 
         return True
+
+if __name__ == '__main__':
+
+    material_parser = MaterialParser()
+    material_parser.init('./conf/material_parser.conf')
+
+    material_parser.run()
