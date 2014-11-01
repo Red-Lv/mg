@@ -55,7 +55,7 @@ class MaterialParser(RabbitMQClient):
         if not config:
             return False
 
-        material_source_config = self.config.get('material_from_file')
+        material_source_config = config.get('material_from_file')
         if material_source_config:
             is_enable = int(material_source_config.get('is_enable', '0'))
             if is_enable:
@@ -66,7 +66,7 @@ class MaterialParser(RabbitMQClient):
         if self.material_source:
             return True
 
-        material_source_config = self.config.get('material_from_web')
+        material_source_config = config.get('material_from_web')
         if material_source_config:
             is_enable = int(material_source_config.get('is_enable', '0'))
             if is_enable:
@@ -77,7 +77,7 @@ class MaterialParser(RabbitMQClient):
         if self.material_source:
             return True
 
-        material_source_config = self.config.get('material_from_msg')
+        material_source_config = config.get('material_from_msg')
         if material_source_config:
             is_enable = int(material_source_config.get('is_enable', '0'))
             if is_enable:
@@ -92,15 +92,15 @@ class MaterialParser(RabbitMQClient):
         """
 
         if not self.material_source:
-            return 0
+            return False
 
         LOG_INFO('start running material parser. material_source: %s', self.material_source)
         timestamp_s = int(time.time())
 
         if self.material_source == self.MATERIAL_FROM_FILE:
-            self.parser_material_from_file()
+            self.parse_material_from_file()
         elif self.material_source == self.MATERIAL_FROM_WEB:
-            self.parser_material_from_web()
+            self.parse_material_from_web()
         else:
             # @TODO
             pass
@@ -140,7 +140,7 @@ class MaterialParser(RabbitMQClient):
             if not material:
                 continue
 
-            self.parse_material_content(parser=self.material_parser, material=material)
+            self.parse_material(parser=self.material_parser, material=material)
 
         return True
 
@@ -176,7 +176,7 @@ class MaterialParser(RabbitMQClient):
             material_data = {}
 
             root = root.find('display')
-            if not root:
+            if root is None:
                 return material_data
 
             material_data['appid'] = appid
@@ -191,7 +191,7 @@ class MaterialParser(RabbitMQClient):
             material_data['logo'] = getattr(root.find('logo'), 'text', '')
 
             last_content = root.find('icon')
-            if last_content:
+            if last_content is not None:
                 material_data['last_content_url'] = getattr(last_content.find('iconlink'), 'text', '')
                 material_data['last_content_title'] = getattr(last_content.find('iconcontent'), 'text', '')
             else:
@@ -208,11 +208,11 @@ class MaterialParser(RabbitMQClient):
             return material_data
 
         if root.tag != 'item':
-            for child in root.find('item'):
+            for child in root.findall('item'):
                 material_data = parse_material_comic_item(child)
-                RabbitMQClient.publish(body=json_to_str(material_data))
+                RabbitMQClient.publish(self, body=json_to_str(material_data))
         else:
             material_data = parse_material_comic_item(child)
-            RabbitMQClient.publish(body=json_to_str(material_data))
+            RabbitMQClient.publish(self, body=json_to_str(material_data))
 
         return True
