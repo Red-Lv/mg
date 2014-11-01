@@ -137,7 +137,7 @@ class MaterialParser(RabbitMQClient):
             return False
 
         for line in read_file_content_iter(self.material_source_file):
-            material = read_web_content(line)
+            material = read_web_content(line, encoding='UTF-8')
             if not material:
                 continue
 
