@@ -59,3 +59,13 @@ def read_web_content(url='', encoding=None):
         return u''
 
     return u''
+
+
+def calc_eid(url):
+    """
+    """
+
+    # @TODO
+    # to be more precisely
+
+    return len(url)
