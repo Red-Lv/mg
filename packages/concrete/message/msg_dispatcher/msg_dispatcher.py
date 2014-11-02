@@ -68,7 +68,7 @@ class MsgDispatcher(RabbitMQClient):
         while True:
 
             routing_key, msg = self.msg_to_publish.get()
-            RabbitMQClient.publish(routing_key=routing_key, body=msg)
+            RabbitMQClient.publish(self, routing_key=routing_key, body=msg)
 
         return True
 
