@@ -33,7 +33,7 @@ class MsgProcessor(object):
         if not self.msg_dispatcher:
             return False
 
-        self.db = frame.mongo_db.fetch_dbhandler('db_test')
+        self.db = frame.mongo_db.fetch_dbhandler('db_message')
         if not self.db:
             return False
 
