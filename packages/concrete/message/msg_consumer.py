@@ -45,6 +45,8 @@ class MsgConsumer(RabbitMQClient):
 
         LOG_INFO(book_name)
 
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+
         return True
 
 if __name__ == '__main__':
