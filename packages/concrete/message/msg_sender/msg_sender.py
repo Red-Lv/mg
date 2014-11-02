@@ -39,7 +39,7 @@ class MsgSender(RabbitMQClient):
         # post body to push module
         #
 
-        print 'msg_sender receive msg. msg: {0}'.formt(body)
+        print 'msg_sender receive msg. msg: {0}'.format(body)
 
         LOG_INFO('msg_sender receive msg. msg: %s', body)
 
@@ -48,6 +48,6 @@ class MsgSender(RabbitMQClient):
 if __name__ == '__main__':
 
     msg_sender = MsgSender()
-    msg_sender.init('./conf/msg_send.conf')
+    msg_sender.init('./conf/msg_sender.conf')
 
     msg_sender.consume()
