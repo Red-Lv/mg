@@ -5,6 +5,8 @@
 # author: lvleibing01
 # desc:
 
+import requests
+
 from lib.globals import *
 from packages.abstract.rabbitmq_client import *
 
@@ -20,6 +22,8 @@ class MsgSender(RabbitMQClient):
     def init(self, config_path=None):
 
         RabbitMQClient.init(self, config_path)
+
+        self.url = self.config['url']
 
         return True
 
@@ -40,6 +44,17 @@ class MsgSender(RabbitMQClient):
         #
 
         print 'msg_sender receive msg. msg: {0}'.format(body)
+
+        try:
+            r = requests.post(url=self.url, data={self.key: body})
+        except Exception as e:
+            r = None
+            pass
+
+        if r and r['status'] == 0:
+            print 'Success'
+        else:
+            print 'Fail'
 
         LOG_INFO('msg_sender receive msg. msg: %s', body)
 
