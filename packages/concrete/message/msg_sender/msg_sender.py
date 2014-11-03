@@ -23,7 +23,7 @@ class MsgSender(RabbitMQClient):
 
         RabbitMQClient.init(self, config_path)
 
-        self.url = self.config['url']
+        self.url = self.config['msg_sender']['url']
 
         return True
 
@@ -46,7 +46,7 @@ class MsgSender(RabbitMQClient):
         print 'msg_sender receive msg. msg: {0}'.format(body)
 
         try:
-            r = requests.post(url=self.url, data={self.key: body})
+            r = requests.post(url=self.url, data={'data': body})
         except Exception as e:
             r = None
             pass
