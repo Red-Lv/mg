@@ -51,7 +51,8 @@ class MsgSender(RabbitMQClient):
             r = None
             pass
 
-        if r and r['status'] == 0:
+        ret = r.json()
+        if ret['status'] == 0:
             print 'Success'
         else:
             print 'Fail'
