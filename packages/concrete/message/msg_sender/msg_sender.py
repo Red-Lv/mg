@@ -47,12 +47,13 @@ class MsgSender(RabbitMQClient):
 
         try:
             r = requests.post(url=self.url, data={'data': body})
+            ret = r.json()
         except Exception as e:
             r = None
+            ret = {}
             pass
 
-        ret = r.json()
-        if ret['status'] == 0:
+        if ret.get('status') == 0:
             print 'Success'
         else:
             print 'Fail'
