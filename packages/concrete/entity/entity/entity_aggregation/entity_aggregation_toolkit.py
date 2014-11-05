@@ -108,7 +108,7 @@ class EntityAggregationToolkit(object):
         document = None
         if not self.entity_agg_db:
             LOG_WARNING('the db is None')
-            return False
+            return document
 
         spec = {'eid': eid}
 
@@ -134,7 +134,6 @@ class EntityAggregationToolkit(object):
         value_from_entity = entity.get(field_mark_status)
         value_from_material = material.get(field_mark_status)
 
-
         status_update_func = getattr(self, config.get('status_update_func', 'check_status_by_value_increment'), None)
         if not callable(status_update_func):
             return 2
@@ -157,10 +156,15 @@ class EntityAggregationToolkit(object):
 
         collection = self.entity_identity_db['entity_identity_{0}'.format(appid)]
 
-        spec = {'unique_key': unique_key,
+        if collection.count() == 0:
+            collection.ensure_index('unique_key', unique=True, backgroud=True)
+
+        spec = {'unique_key': unique_key}
+        document = {'unique_key': unique_key,
+                    'appid': appid,
                 'eid': eid}
 
-        collection.update(spec, spec, upsert=True)
+        collection.update(spec, document, upsert=True)
 
         return True
 
@@ -174,6 +178,8 @@ class EntityAggregationToolkit(object):
         eid = entity['eid']
 
         collection = self.entity_agg_db['entity_agg_{0}'.format(appid)]
+        if collection.count() == 0:
+            collection.ensure_index('eid', unique=True, backgroud=True)
 
         spec = {'eid': eid}
 
