@@ -5,9 +5,13 @@
 # author: lvleibing01
 # desc:
 
-import codecs
 import json
+import sign
+import codecs
+import hashlib
+import platform
 import requests
+
 
 from binascii import crc32
 
@@ -63,11 +67,19 @@ def read_web_content(url='', encoding=None):
     return u''
 
 
-def calc_eid(url):
+def fs64_sign(key):
     """
     """
+    os = platform.system()
+    result = None
+    if os == "Linux":
+        sign_result = sign.fs64(key)
+        key1 = sign_result[1]
+        key2 = sign_result[2]
+        result = int(key1<<32) + key2
+    elif os == "Windows":
+        m = hashlib.md5()
+        m.update(key)
+        result = int(m.hexdigest(), 16) & 0xFFFFFFFFFFFFFFFF
 
-    # @TODO
-    # to be more precisely
-
-    return (crc32(url) & 0xFFFFFFFF)
+    return result
