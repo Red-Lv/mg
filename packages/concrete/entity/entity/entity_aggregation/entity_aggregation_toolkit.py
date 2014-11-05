@@ -82,7 +82,7 @@ class EntityAggregationToolkit(object):
         if not unique_key:
             return False
 
-        eid = calc_eid(unique_key)
+        eid = '{0}'.format(fs64_sign(unique_key))
         material['eid'] = eid
 
         entity = self.fetch_entity_agg(appid, eid)
