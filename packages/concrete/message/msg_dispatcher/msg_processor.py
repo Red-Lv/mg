@@ -107,6 +107,9 @@ class MsgProcessor(object):
             return False
 
         collection = self.db['collection_msg']
+        if collection.count() == 0:
+            collection.ensure_index([('appid', pymongo.ASCENDING), ('eid', pymongo.ASCENDING)],
+                                    unique=True, backgroud=True)
 
         spec = {'appid': msg_obj['appid'], 'eid': msg_obj['eid']}
 
