@@ -49,9 +49,7 @@ class MsgSender(RabbitMQClient):
             r = requests.post(url=self.url, data={'data': body})
             ret = r.json()
         except Exception as e:
-            r = None
             ret = {}
-            pass
 
         if ret.get('status') == 0:
             print 'Success'
@@ -59,6 +57,8 @@ class MsgSender(RabbitMQClient):
             print 'Fail'
 
         LOG_INFO('msg_sender receive msg. msg: %s', body)
+
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
         return True
 
