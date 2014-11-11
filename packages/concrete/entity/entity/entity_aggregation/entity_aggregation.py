@@ -52,7 +52,7 @@ class EntityAggregation(RabbitMQClient):
 
     def callback(self, ch, method, properties, body):
 
-        LOG_DEBUG('msg received: %s', body)
+        LOG_DEBUG('msg received: [body: %s]', body)
 
         request = threadpool.makeRequests(self.entity_aggregation_toolkit.aggregate_material_to_entity, (body,))[0]
         self.thread_pool.putRequest(request)
@@ -70,7 +70,7 @@ class EntityAggregation(RabbitMQClient):
             routing_key, msg = self.msg_to_publish.get()
             RabbitMQClient.publish(self, routing_key=routing_key, body=msg)
 
-            LOG_DEBUG('msg published: %s', msg)
+            LOG_DEBUG('msg published: [routing_key: %s, body: %s]', routing_key, msg)
 
         return True
 
