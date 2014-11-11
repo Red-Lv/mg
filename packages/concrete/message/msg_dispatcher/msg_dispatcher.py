@@ -35,7 +35,7 @@ class MsgDispatcher(RabbitMQClient):
 
         RabbitMQClient.init(self, config_path)
 
-        self.msg_processor.init(self)
+        self.msg_processor.init()
 
         return True
 
