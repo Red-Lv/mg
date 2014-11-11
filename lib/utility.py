@@ -12,7 +12,6 @@ import hashlib
 import platform
 import requests
 
-
 from binascii import crc32
 
 
