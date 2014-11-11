@@ -16,5 +16,5 @@ LOG_DEBUG = frame.logger.logger.debug
 LOG_INFO = frame.logger.logger.info
 
 LOG_WARNING = frame.logger.wf_logger.warning
-LOG_DEBUG = frame.logger.wf_logger.error
+LOG_ERROR = frame.logger.wf_logger.error
 LOG_CRITICAL = frame.logger.wf_logger.critical
