@@ -19,32 +19,34 @@ class MsgProcessor(object):
 
     __metaclass__ = Singleton
 
-    def __init__(self):
+    def __init__(self, msg_to_publish=None):
 
-        self.msg_dispatcher = None
         self.db = None
+        self.msg_to_publish = msg_to_publish
 
         self.pool_size = 20
         self.thread_pool = None
 
-    def init(self, msg_dispatcher=None, pool_size=20):
+    def init(self, pool_size=20):
 
-        self.msg_dispatcher = msg_dispatcher
-        if not self.msg_dispatcher:
+        if not self.msg_to_publish:
+            LOG_WARNING('msg_to_publish queue is None')
             return False
 
-        self.db = frame.mongo_db.fetch_dbhandler('db_message')
-        if not self.db:
-            return False
+        self.init_db()
 
         self.pool_size = pool_size
         self.thread_pool = threadpool.ThreadPool(self.pool_size)
 
         return True
 
-    def __del__(self):
+    def init_db(self):
 
-        MsgDispatcher.__del__()
+        self.msg_db = frame.mongo_db.fetch_dbhandler('db_message')
+
+        return True
+
+    def __del__(self):
 
         pass
 
@@ -81,7 +83,7 @@ class MsgProcessor(object):
             LOG_WARNING('msg does not have appid or eid. msg: %s', msg)
             return False
 
-        LOG_INFO('start processing msg.')
+        LOG_INFO('start processing msg. appid: %s, eid: %s', msg_obj['appid'], msg_obj['eid'])
         timestamp_s = int(time.time())
 
         # dump msg
@@ -92,6 +94,7 @@ class MsgProcessor(object):
 
         timestamp_e = int(time.time())
         time_cost = timestamp_e - timestamp_s
+
         LOG_INFO('finish processing msg. time_cost: %s.', time_cost)
 
         return True
@@ -102,7 +105,7 @@ class MsgProcessor(object):
         msg_obj: json in unicode
         """
 
-        if not self.db:
+        if not self.msg_db:
             LOG_WARNING('the db is None')
             return False
 
@@ -127,8 +130,9 @@ class MsgProcessor(object):
 
         time_set = msg_obj.get('time_set', 0)
         if time_set:
-            self.msg_dispatcher.msg_to_publish.put(('', msg))
+            self.msg_to_publish.put(('', msg))
         else:
-            self.msg_dispatcher.msg_to_publish.put(('', msg))
+            # @TODO
+            pass
 
         return True
