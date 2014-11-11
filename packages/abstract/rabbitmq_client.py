@@ -28,8 +28,6 @@ class RabbitMQClient(AbstractModule):
 
         AbstractModule.__init__(self)
 
-        self.config = None
-
         self.host = ''
         self.port = 0
         self.mq_conn = None
@@ -54,6 +52,8 @@ class RabbitMQClient(AbstractModule):
         if self.mq_conn:
             self.mq_conn.close()
 
+        AbstractModule.exit(self)
+
         return True
 
     def init_client(self):
@@ -63,6 +63,9 @@ class RabbitMQClient(AbstractModule):
         self.host = self.config['rmq_client']['host']
         self.port = int(self.config['rmq_client']['port'])
         self.mq_conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, port=self.port))
+
+        # why just initialize producer client rather than both consumer & producer clients here ?
+        # for if we initialize consumer client here, then the consumer will start consuming, which is not expected.
 
         self.init_producer_client()
 
@@ -91,7 +94,7 @@ class RabbitMQClient(AbstractModule):
         return True
 
     def init_producer_client(self):
-        """
+        """Initialize producer client
         """
 
         exchange_config = self.config['rmq_client']['producer_exchange']
@@ -133,6 +136,7 @@ class RabbitMQClient(AbstractModule):
         if not self.producer_channel:
             return False
 
+        # use default exchange if parameter exchange is None
         if exchange is None:
             exchange = self.producer_exchange.exchange_name
 
