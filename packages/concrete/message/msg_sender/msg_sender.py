@@ -53,6 +53,8 @@ class MsgSender(RabbitMQClient):
         if ret.get('status') != 0:
             LOG_WARNING('fail to post data to push service. push_service: %s, error: %s',
                         self.url, ret.get('error_message'))
+        else:
+            LOG_INFO('success in posting data to push service.')
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
