@@ -28,16 +28,14 @@ class MsgDispatcher(RabbitMQClient):
 
         RabbitMQClient.__init__(self)
 
-        self.msg_processor = None
+        self.msg_to_publish = Queue.Queue()
+        self.msg_processor = MsgProcessor(self.msg_to_publish)
 
     def init(self, config_path=None):
 
         RabbitMQClient.init(self, config_path)
 
-        self.msg_processor = MsgProcessor()
         self.msg_processor.init(self)
-
-        self.msg_to_publish = Queue.Queue()
 
         return True
 
@@ -55,6 +53,8 @@ class MsgDispatcher(RabbitMQClient):
         """
         """
 
+        LOG_DEBUG('msg received: [body: %s]', body)
+
         self.msg_processor.add_task(body)
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -69,6 +69,8 @@ class MsgDispatcher(RabbitMQClient):
 
             routing_key, msg = self.msg_to_publish.get()
             RabbitMQClient.publish(self, routing_key=routing_key, body=msg)
+
+            LOG_DEBUG('msg published: [routing_key: %s, body: %s]', routing_key, msg)
 
         return True
 
