@@ -31,7 +31,7 @@ class EntityAggregation(RabbitMQClient):
 
     def init(self, config_path=None):
 
-        RabbitMQClient.init(self, config_path)
+        RabbitMQClient.init(self, config_path=config_path)
 
         self.entity_aggregation_toolkit.init(self.config['entity_aggregation_toolkit'])
 
@@ -52,6 +52,8 @@ class EntityAggregation(RabbitMQClient):
 
     def callback(self, ch, method, properties, body):
 
+        LOG_DEBUG('msg received: %s', body)
+
         request = threadpool.makeRequests(self.entity_aggregation_toolkit.aggregate_material_to_entity, (body,))[0]
         self.thread_pool.putRequest(request)
 
@@ -67,6 +69,8 @@ class EntityAggregation(RabbitMQClient):
 
             routing_key, msg = self.msg_to_publish.get()
             RabbitMQClient.publish(self, routing_key=routing_key, body=msg)
+
+            LOG_DEBUG('msg published: %s', msg)
 
         return True
 
