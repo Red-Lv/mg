@@ -24,6 +24,9 @@ class MsgSender(RabbitMQClient):
         RabbitMQClient.init(self, config_path)
 
         self.url = self.config['msg_sender']['url']
+        if not self.url:
+            LOG_WARNING('url to post is None')
+            return False
 
         return True
 
@@ -39,24 +42,17 @@ class MsgSender(RabbitMQClient):
 
     def callback(self, ch, method, properties, body):
 
-        # @TODO
-        # post body to push module
-        #
-
-        print 'msg_sender receive msg. msg: {0}'.format(body)
+        LOG_DEBUG('msg received: [body: %s]', body)
 
         try:
             r = requests.post(url=self.url, data={'data': body})
             ret = r.json()
         except Exception as e:
-            ret = {}
+            ret = {'error_message': e}
 
-        if ret.get('status') == 0:
-            print 'Success'
-        else:
-            print 'Fail'
-
-        LOG_INFO('msg_sender receive msg. msg: %s', body)
+        if ret.get('status') != 0:
+            LOG_WARNING('fail to post data to push service. push_service: %s, error: %s',
+                        self.url, ret.get('error_message'))
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
