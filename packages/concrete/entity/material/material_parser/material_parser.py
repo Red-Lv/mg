@@ -162,7 +162,7 @@ class MaterialParser(RabbitMQClient):
             if not material:
                 continue
 
-            self.parse_material(parser=self.material_parser, material=material)
+            self.parse_material(_parser=self.material_parser, material=material)
 
         return True
 
