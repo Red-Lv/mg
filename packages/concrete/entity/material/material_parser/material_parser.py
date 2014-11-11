@@ -25,11 +25,9 @@ class MaterialParser(RabbitMQClient):
 
         RabbitMQClient.__init__(self)
 
-        self.config = None
-
     def init(self, config_path=None):
 
-        RabbitMQClient.init(self, config_path)
+        RabbitMQClient.init(self, config_path=config_path)
 
         ret = self.init_material_parser()
         if not ret:
@@ -48,12 +46,18 @@ class MaterialParser(RabbitMQClient):
         return True
 
     def init_material_parser(self):
-        """
+        """Initialize material parser from config file
         """
 
         self.material_source = self.MATERIAL_FROM_UNIVERSE
         config = self.config.get('material_parser')
         if not config:
+            LOG_WARNING('fail to initialize material parser. error: %s', 'material parser config does not exist')
+            return False
+
+        self.appid = int(config.get('appid', 0))
+        if not self.appid:
+            LOG_WARNING('appid is undefined')
             return False
 
         material_source_config = config.get('material_from_file')
@@ -65,6 +69,7 @@ class MaterialParser(RabbitMQClient):
                 self.material_parser = material_source_config.get('material_parser', '')
 
         if self.material_source:
+            LOG_INFO('success in initializing config parser. material_source: %s', self.material_source)
             return True
 
         material_source_config = config.get('material_from_web')
@@ -76,6 +81,7 @@ class MaterialParser(RabbitMQClient):
                 self.material_parser = material_source_config.get('material_parser', '')
 
         if self.material_source:
+            LOG_INFO('success in initializing config parser. material_source: %s', self.material_source)
             return True
 
         material_source_config = config.get('material_from_msg')
@@ -86,13 +92,20 @@ class MaterialParser(RabbitMQClient):
                 # @TODO
                 # init a thread to consumer message from the special socket
 
-        return True
+        if self.material_source:
+            LOG_INFO('success in initializing config parser. material_source: %s', self.material_source)
+            return True
+
+        LOG_WARNING('fail to initialize material parser. error: %s', 'material source is not configured')
+
+        return False
 
     def run(self):
         """
         """
 
         if not self.material_source:
+            LOG_WARNING('fail to run material parser. error: %s', 'material source is undefined')
             return False
 
         LOG_INFO('start running material parser. material_source: %s', self.material_source)
@@ -118,9 +131,13 @@ class MaterialParser(RabbitMQClient):
         """
 
         if not self.material_source_file:
+            LOG_WARNING('fail to parse material from file. error: %s', 'material_source_file is undefined')
             return False
 
         for line in read_file_content_iter(self.material_source_file):
+
+            LOG_INFO('start parsing material from file. file_path: %s', line)
+
             material = read_file_content(line)
             if not material:
                 continue
@@ -134,9 +151,13 @@ class MaterialParser(RabbitMQClient):
         """
 
         if not self.material_source_file:
+            LOG_WARNING('fail to parse material from web. error: %s', 'material_source_file is undefined')
             return False
 
         for line in read_file_content_iter(self.material_source_file):
+
+            LOG_INFO('start parsing material from web. url: %s', line)
+
             material = read_web_content(line, encoding='UTF-8')
             if not material:
                 continue
@@ -145,12 +166,13 @@ class MaterialParser(RabbitMQClient):
 
         return True
 
-    def parse_material(self, parser=None, material=u''):
+    def parse_material(self, _parser=None, material=u''):
         """
         """
 
-        parser = getattr(self, parser, None)
+        parser = getattr(self, _parser, None)
         if not parser or not callable(parser):
+            LOG_WARNING('parser is None or not callable. parser: %s', _parser)
             return False
 
         parser(material)
@@ -161,15 +183,16 @@ class MaterialParser(RabbitMQClient):
         """
         """
 
-        # appid of a special category
-        appid = 1
-
         if not material:
             return False
+
+        LOG_INFO('start parsing material comic.')
+        timestamp_s = int(time.time())
 
         try:
             root = ET.fromstring(material.encode('UTF-8'))
         except Exception as e:
+            LOG_WARNING('fail to construct element tree from material. error: %s', e)
             return False
 
         def parse_material_comic_item(root):
@@ -180,21 +203,21 @@ class MaterialParser(RabbitMQClient):
             if root is None:
                 return material_data
 
-            material_data['appid'] = appid
+            material_data['appid'] = self.appid
 
-            material_data['site_url'] = getattr(root.find('siteurl'), 'text', '')
+            material_data['site_url'] = getattr(root.find('siteurl'), 'text', '').lower()
             material_data['site_name'] = getattr(root.find('sitename'), 'text', '')
 
-            material_data['url'] = getattr(root.find('url'), 'text', '')
+            material_data['url'] = getattr(root.find('url'), 'text', '').lower()
             material_data['title'] = getattr(root.find('title'), 'text', '')
             material_data['formal_title'] = getattr(root.find('formal_title'), 'text', '')
             material_data['author'] = getattr(root.find('author'), 'text', '')
-            material_data['logo'] = getattr(root.find('logo'), 'text', '')
+            material_data['logo'] = getattr(root.find('logo'), 'text', '').lower()
             material_data['status'] = getattr(root.find('status'), 'text', '')
 
             last_content = root.find('icon')
             if last_content is not None:
-                material_data['last_content_url'] = getattr(last_content.find('iconlink'), 'text', '')
+                material_data['last_content_url'] = getattr(last_content.find('iconlink'), 'text', '').lower()
                 material_data['last_content_title'] = getattr(last_content.find('iconcontent'), 'text', '')
             else:
                 material_data['last_content_url'] = ''
@@ -209,13 +232,23 @@ class MaterialParser(RabbitMQClient):
 
             return material_data
 
+        no_of_element = 0
         if root.tag != 'item':
             for child in root.findall('item'):
                 material_data = parse_material_comic_item(child)
-                RabbitMQClient.publish(self, body=json_to_str(material_data))
+                if material_data:
+                    RabbitMQClient.publish(self, body=json_to_str(material_data))
+                    no_of_element += 1
         else:
             material_data = parse_material_comic_item(child)
-            RabbitMQClient.publish(self, body=json_to_str(material_data))
+            if material_data:
+                RabbitMQClient.publish(self, body=json_to_str(material_data))
+                no_of_element += 1
+
+        timestamp_e = int(time.time())
+        time_cost = timestamp_e - timestamp_s
+
+        LOG_INFO('finish parsing material comic. no_of_element: %s, time_cost: %s.', no_of_element, time_cost)
 
         return True
 
