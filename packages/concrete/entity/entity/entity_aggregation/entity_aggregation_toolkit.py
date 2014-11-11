@@ -27,11 +27,13 @@ class EntityAggregationToolkit(object):
 
     def __init__(self, msg_to_publish=None):
 
+        self.config = None
         self.msg_to_publish = msg_to_publish
 
     def init(self, config=None):
 
         if not self.msg_to_publish:
+            LOG_WARNING('msg_to_publish queue is None')
             return False
 
         self.config = config
@@ -60,36 +62,39 @@ class EntityAggregationToolkit(object):
         """
 
         try:
-            material= json.loads(material)
+            material = json.loads(material)
         except Exception as e:
-            return False
-
-        LOG_INFO('url: %s', material['url'])
-
-        appid = material.get('appid')
-        if appid is None:
-            return False
-
-        config = self.config['appid_{0}'.format(appid)]
-        if not config:
-            return False
-
-        me_relation = int(config.get('em_relation', 0))
-        if me_relation == self.ME_RELATION_MULTI_TO_ONE:
+            LOG_WARNING('fail to load object from material. error: %s', e)
             return False
 
         unique_key = material.get('unique_key') or material.get('url')
         if not unique_key:
+            LOG_DEBUG('there is no unique key in material')
             return False
 
-        eid = '{0}'.format(fs64_sign(unique_key))
-        material['eid'] = eid
+        LOG_INFO('start aggregating material to entity. unique_key: %s.', unique_key)
+        timestamp_s = int(time.time())
 
-        entity = self.fetch_entity_agg(appid, eid)
+        appid = material.get('appid')
+        if appid is None:
+            LOG_DEBUG('appid is None in material')
+            return False
+
+        config = self.config['appid_{0}'.format(appid)]
+        if not config:
+            LOG_DEBUG('there is no config for appid: %s', appid)
+            return False
+
+        me_relation = int(config.get('em_relation', 0))
+        if me_relation == self.ME_RELATION_MULTI_TO_ONE:
+            LOG_DEBUG('me_relation: ME_RELATION_MULTI_TO_ONE')
+            return False
+
+        material['eid'] = '{0}'.format(fs64_sign(unique_key))
+        entity = self.fetch_entity_agg(appid, material['eid'])
 
         entity_status = self.check_entity_status(entity, material)
-        if entity_status != 0 and entity_status != 1:
-            return False
+        LOG_INFO('entity_status: %s, unique_key: %s', entity_status, unique_key)
 
         entity = material
 
@@ -98,6 +103,11 @@ class EntityAggregationToolkit(object):
 
         if entity_status == 0:
             self.pack_msg(entity)
+
+        timestamp_e = int(time.time())
+        time_cost = timestamp_e - timestamp_s
+
+        LOG_INFO('finish aggregating material to entity. unique_key: %s, time_cost: %s.', unique_key, time_cost)
 
         return True
 
