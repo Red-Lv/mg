@@ -178,7 +178,7 @@ class MongoDB(AbstractDB):
                 client = pymongo.MongoClient(hosts_or_uri)
             else:
                 client = pymongo.MongoReplicaSetClient(hosts_or_uri)
-                client.read_preference = ReadPreference.SECONDARY_PREFERRED
+                client.read_preference = ReadPreference.PRIMARY_PREFERRED
 
             db = client[db_cluster_config['db']]
             self.dbhandler_dict[db] = client
