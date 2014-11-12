@@ -48,7 +48,6 @@ class MsgSender(RabbitMQClient):
         try:
             msg_obj = json.loads(body)
         except Exception as e:
-            msg_obj = None
             LOG_WARNING('fail to load msg to json. msg: %s', body)
             return False
 
