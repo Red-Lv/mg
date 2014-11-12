@@ -88,7 +88,7 @@ class RabbitMQClient(AbstractModule):
         self.consumer_channel.queue_bind(exchange=self.consumer_exchange.exchange_name, queue=queue_name,
                                          routing_key=self.consumer_exchange.routing_key)
 
-        self.consumer_channel.basic_qos(prefetch_count=10)
+        self.consumer_channel.basic_qos(prefetch_count=1)
         self.consumer_channel.basic_consume(self.callback, queue=queue_name)
 
         return True
