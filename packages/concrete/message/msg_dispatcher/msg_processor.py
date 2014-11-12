@@ -75,7 +75,6 @@ class MsgProcessor(object):
         try:
             msg_obj = json.loads(msg)
         except Exception as e:
-            msg_obj = None
             LOG_WARNING('fail to load msg to json. msg: %s', msg)
             return False
 
