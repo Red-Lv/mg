@@ -30,7 +30,8 @@ class RabbitMQClient(AbstractModule):
 
         self.host = ''
         self.port = 0
-        self.mq_conn = None
+        self.consumer_conn = None
+        self.producer_conn = None
 
         self.consumer_channel = None
         self.producer_channel = None
@@ -49,9 +50,6 @@ class RabbitMQClient(AbstractModule):
 
     def exit(self):
 
-        if self.mq_conn:
-            self.mq_conn.close()
-
         AbstractModule.exit(self)
 
         return True
@@ -62,6 +60,7 @@ class RabbitMQClient(AbstractModule):
 
         self.host = self.config['rmq_client']['host']
         self.port = int(self.config['rmq_client']['port'])
+
         self.consumer_conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, port=self.port))
         self.producer_conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, port=self.port))
 
