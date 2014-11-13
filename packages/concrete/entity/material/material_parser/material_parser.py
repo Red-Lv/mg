@@ -222,12 +222,18 @@ class MaterialParser(RabbitMQClient):
             else:
                 material_data['last_content_url'] = ''
                 material_data['last_content_title'] = ''
+            
+            last_content = root.findall('link')[-1]
+            if material_data['last_content_url'] != getattr(last_content.find('linkurl'), 'text', '').lower():
+                material_data['last_content_url'] = getattr(last_content.find('linkurl'), 'text', '').lower()
+                material_data['last_content_title'] = getattr(last_content.find('linkcontent'), 'text', '')
+                
             material_data['last_content_index'] = len((root.findall('link')))
-            material_data['last_content_update_time'] = int(getattr(root.find('time'), 'text', int(time.time())))
+            material_data['last_content_update_time'] = int(getattr(root.find('update_time'), 'text', int(time.time())))
 
             # @TODO
             # material validity check
-            if not material_data['url'] or not material_data['last_content_url']:
+            if not material_data['formal_title'] or not material_data['url'] or not material_data['last_content_url']:
                 material_data = {}
 
             return material_data
