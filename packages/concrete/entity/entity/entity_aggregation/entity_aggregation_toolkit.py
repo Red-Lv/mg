@@ -73,7 +73,7 @@ class EntityAggregationToolkit(object):
             return False
 
         LOG_INFO('start aggregating material to entity. unique_key: %s.', unique_key)
-        timestamp_s = int(time.time())
+        timestamp_s = time.time()
 
         appid = material.get('appid')
         if appid is None:
@@ -105,7 +105,7 @@ class EntityAggregationToolkit(object):
         if entity_status == 0:
             self.pack_msg(entity)
 
-        timestamp_e = int(time.time())
+        timestamp_e = time.time()
         time_cost = timestamp_e - timestamp_s
 
         LOG_INFO('finish aggregating material to entity. unique_key: %s, time_cost: %s.', unique_key, time_cost)

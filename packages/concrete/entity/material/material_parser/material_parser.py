@@ -109,7 +109,7 @@ class MaterialParser(RabbitMQClient):
             return False
 
         LOG_INFO('start running material parser. material_source: %s', self.material_source)
-        timestamp_s = int(time.time())
+        timestamp_s = time.time()
 
         if self.material_source == self.MATERIAL_FROM_FILE:
             self.parse_material_from_file()
@@ -119,7 +119,7 @@ class MaterialParser(RabbitMQClient):
             # @TODO
             pass
 
-        timestamp_e = int(time.time())
+        timestamp_e = time.time()
         time_cost = timestamp_e - timestamp_s
 
         LOG_INFO('finish running material parser. time_cost: %s', time_cost)
@@ -187,7 +187,7 @@ class MaterialParser(RabbitMQClient):
             return False
 
         LOG_INFO('start parsing material comic.')
-        timestamp_s = int(time.time())
+        timestamp_s = time.time()
 
         try:
             root = ET.fromstring(material.encode('UTF-8'))
@@ -229,7 +229,7 @@ class MaterialParser(RabbitMQClient):
                 material_data['last_content_title'] = getattr(last_content.find('linkcontent'), 'text', '')
                 
             material_data['last_content_index'] = len((root.findall('link')))
-            material_data['last_content_update_time'] = int(getattr(root.find('update_time'), 'text', int(time.time())))
+            material_data['last_content_update_time'] = int(getattr(root.find('update_time'), 'text', time.time()))
 
             # @TODO
             # material validity check
@@ -251,7 +251,7 @@ class MaterialParser(RabbitMQClient):
                 RabbitMQClient.publish(self, body=json_to_str(material_data))
                 no_of_element += 1
 
-        timestamp_e = int(time.time())
+        timestamp_e = time.time()
         time_cost = timestamp_e - timestamp_s
 
         LOG_INFO('finish parsing material comic. no_of_element: %s, time_cost: %s.', no_of_element, time_cost)

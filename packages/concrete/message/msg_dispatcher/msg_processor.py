@@ -83,7 +83,7 @@ class MsgProcessor(object):
             return False
 
         LOG_INFO('start processing msg. appid: %s, eid: %s', msg_obj['appid'], msg_obj['eid'])
-        timestamp_s = int(time.time())
+        timestamp_s = time.time()
 
         # dump msg
         self.dump_msg(msg_obj)
@@ -91,7 +91,7 @@ class MsgProcessor(object):
         # route msg
         self.route_msg(msg_obj)
 
-        timestamp_e = int(time.time())
+        timestamp_e = time.time()
         time_cost = timestamp_e - timestamp_s
 
         LOG_INFO('finish processing msg. time_cost: %s.', time_cost)
