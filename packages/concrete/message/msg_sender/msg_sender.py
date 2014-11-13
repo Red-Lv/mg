@@ -41,18 +41,21 @@ class MsgSender(RabbitMQClient):
 
         return True
 
-    def callback(self, ch, method, properties, body):
+    def post_data(self, body=None):
+        """
+        """
 
-        LOG_DEBUG('msg received: [body: %s]', body)
+        LOG_INFO('start posting data to push service.')
+        timestamp_s = time.time()
 
         try:
             msg_obj = json.loads(body)
         except Exception as e:
-            LOG_WARNING('fail to load msg to json. msg: %s', body)
+            LOG_WARNING('fail to load data to json. data: %s.', body)
             return False
 
         if 'appid' not in msg_obj or 'eid' not in msg_obj:
-            LOG_WARNING('msg does not have appid or eid. msg: %s', body)
+            LOG_WARNING('data does not have appid or eid. data: %s.', body)
             return False
 
         try:
@@ -62,10 +65,23 @@ class MsgSender(RabbitMQClient):
             ret = {'error_message': e}
 
         if ret.get('status') != 0:
-            LOG_WARNING('fail to post data to push service. push_service: %s, error: %s',
+            LOG_WARNING('fail to post data to push service. push_service: %s, error: %s.',
                         self.url, ret.get('error_message'))
-        else:
-            LOG_INFO('success in posting data to push service. appid: %s, eid: %s.', msg_obj['appid'], msg_obj['eid'])
+            return False
+
+        timestamp_e = time.time()
+        time_cost = timestamp_e - timestamp_s
+
+        LOG_INFO('success in posting data to push service. appid: %s, eid: %s, time_cost: %s.',
+                 msg_obj['appid'], msg_obj['eid'], time_cost)
+
+        return True
+
+    def callback(self, ch, method, properties, body):
+
+        LOG_DEBUG('msg received: [body: %s]', body)
+
+        self.post_data(body)
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
