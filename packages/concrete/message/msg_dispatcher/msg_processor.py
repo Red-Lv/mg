@@ -75,7 +75,6 @@ class MsgProcessor(object):
         try:
             msg_obj = json.loads(msg)
         except Exception as e:
-            msg_obj = None
             LOG_WARNING('fail to load msg to json. msg: %s', msg)
             return False
 
@@ -109,7 +108,7 @@ class MsgProcessor(object):
             LOG_WARNING('the db is None')
             return False
 
-        collection = self.db['collection_msg']
+        collection = self.msg_db['collection_msg']
         if collection.count() == 0:
             collection.ensure_index([('appid', pymongo.ASCENDING), ('eid', pymongo.ASCENDING)],
                                     unique=True, backgroud=True)
@@ -130,9 +129,9 @@ class MsgProcessor(object):
 
         time_set = msg_obj.get('time_set', 0)
         if time_set:
-            self.msg_to_publish.put(('', msg))
-        else:
             # @TODO
             pass
+        else:
+            self.msg_to_publish.put(('', msg))
 
         return True

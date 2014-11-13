@@ -90,13 +90,14 @@ class EntityAggregationToolkit(object):
             LOG_DEBUG('me_relation: ME_RELATION_MULTI_TO_ONE')
             return False
 
-        material['eid'] = '{0}'.format(fs64_sign(unique_key))
-        entity = self.fetch_entity_agg(appid, material['eid'])
+        eid = '{0}'.format(fs64_sign(unique_key))
+        entity = self.fetch_entity_agg(appid, eid)
 
         entity_status = self.check_entity_status(entity, material)
         LOG_INFO('entity_status: %s, unique_key: %s', entity_status, unique_key)
 
         entity = material
+        entity['eid'] = eid
 
         self.dump_entity_identity(appid, unique_key, eid)
         self.dump_entity_agg(entity)

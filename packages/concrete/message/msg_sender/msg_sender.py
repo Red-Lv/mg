@@ -5,6 +5,7 @@
 # author: lvleibing01
 # desc:
 
+import json
 import requests
 
 from lib.globals import *
@@ -45,6 +46,16 @@ class MsgSender(RabbitMQClient):
         LOG_DEBUG('msg received: [body: %s]', body)
 
         try:
+            msg_obj = json.loads(body)
+        except Exception as e:
+            LOG_WARNING('fail to load msg to json. msg: %s', body)
+            return False
+
+        if 'appid' not in msg_obj or 'eid' not in msg_obj:
+            LOG_WARNING('msg does not have appid or eid. msg: %s', body)
+            return False
+
+        try:
             r = requests.post(url=self.url, data={'data': body})
             ret = r.json()
         except Exception as e:
@@ -53,6 +64,8 @@ class MsgSender(RabbitMQClient):
         if ret.get('status') != 0:
             LOG_WARNING('fail to post data to push service. push_service: %s, error: %s',
                         self.url, ret.get('error_message'))
+        else:
+            LOG_INFO('success in posting data to push service. appid: %s, eid: %s.', msg_obj['appid'], msg_obj['eid'])
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
