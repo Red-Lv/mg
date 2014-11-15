@@ -69,7 +69,7 @@ class MsgDispatcher(RabbitMQClient):
 
         while True:
 
-            if self._dismissed.is_set()
+            if self._dismissed.is_set():
                 break
 
             routing_key, msg = self.msg_to_publish.get()
