@@ -166,8 +166,7 @@ class EntityAggregationToolkit(object):
             return False
 
         collection = self.entity_identity_db['entity_identity_{0}'.format(appid)]
-
-        if collection.count() == 0:
+        if collection.find_one() is None:
             collection.ensure_index('unique_key', unique=True, backgroud=True)
 
         spec = {'unique_key': unique_key}
@@ -189,7 +188,7 @@ class EntityAggregationToolkit(object):
         eid = entity['eid']
 
         collection = self.entity_agg_db['entity_agg_{0}'.format(appid)]
-        if collection.count() == 0:
+        if collection.count() is None:
             collection.ensure_index('eid', unique=True, backgroud=True)
 
         spec = {'eid': eid}
