@@ -37,6 +37,8 @@ class MsgDispatcher(RabbitMQClient):
 
         self.msg_processor.init()
 
+        self.publish_thread = threading.Thread(target=self.publish)
+
         return True
 
     def __del__(self):
@@ -67,6 +69,9 @@ class MsgDispatcher(RabbitMQClient):
 
         while True:
 
+            if self._dismissed.is_set()
+                break
+
             routing_key, msg = self.msg_to_publish.get()
             RabbitMQClient.publish(self, routing_key=routing_key, body=msg)
 
@@ -85,7 +90,7 @@ class MsgDispatcher(RabbitMQClient):
         """
 
         # invoke the publish thread
-        threading.Thread(target=self.publish).start()
+        self.publish_thread.start()
 
         # invoke the consume thread
         self.consume()
