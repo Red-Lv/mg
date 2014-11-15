@@ -60,14 +60,14 @@ class MsgSender(RabbitMQClient):
             return False
 
         try:
-            r = requests.post(url=self.url, data={'data': body})
+            r = requests.post(url=self.url, data={'data': body}, timeout=3)
             ret = r.json()
         except Exception as e:
             ret = {'error_message': e}
 
         if ret.get('status') != 0:
-            LOG_WARNING('fail to post data to push service. push_service: %s, error: %s.',
-                        self.url, ret.get('error_message'))
+            LOG_WARNING('fail to post data to push service. push_service: %s, error: %s, response: %s.',
+                        self.url, ret.get('error_message'), getattr(r, 'text', u'').encode('UTF-8'))
             return False
 
         timestamp_e = time.time()
