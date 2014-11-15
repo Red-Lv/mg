@@ -98,3 +98,4 @@ if __name__ == '__main__':
     msg_producer.init('./conf/msg_producer.conf')
 
     msg_producer.publish()
+    msg_producer.exit()
