@@ -59,6 +59,8 @@ class RabbitMQClient(AbstractModule):
 
         AbstractModule.exit(self)
 
+        self._dismissed.set()
+
         self.producer_conn_check_thread.join()
 
         return True
