@@ -49,12 +49,12 @@ def read_file_content(file_path='', encoding='UTF-8'):
         return ''
 
 
-def read_web_content(url='', encoding=None):
+def read_web_content(url='', encoding=None, timeout=3):
     """
     """
 
     try:
-        r = requests.get(url)
+        r = requests.get(url, timeout=timeout)
         if encoding:
             r.encoding = encoding
         if r.status_code != requests.codes.ok:
