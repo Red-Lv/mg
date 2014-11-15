@@ -39,6 +39,9 @@ class RabbitMQClient(AbstractModule):
         self.producer_channel = None
 
         self.internal_lock = threading.Lock()
+        self.producer_conn_check_thread = None
+
+        self._dismissed = threading.Event()
 
     def init(self, config_path=None):
 
@@ -55,6 +58,8 @@ class RabbitMQClient(AbstractModule):
     def exit(self):
 
         AbstractModule.exit(self)
+
+        self.producer_conn_check_thread.join()
 
         return True
 
@@ -111,7 +116,8 @@ class RabbitMQClient(AbstractModule):
         self.producer_channel.exchange_declare(exchange=self.producer_exchange.exchange_name,
                                                type=self.producer_exchange.exchange_type)
 
-        threading.Thread(target=self._process_data_events).start()
+        self.producer_conn_check_thread = threading.Thread(target=self._process_data_events)
+        self.producer_conn_check_thread.start()
 
         return True
     
@@ -121,10 +127,15 @@ class RabbitMQClient(AbstractModule):
 
         while True:
 
+            if self._dismissed.is_set():
+                break
+
             with self.internal_lock:
                 self.producer_conn.process_data_events()
 
             time.sleep(10)
+
+        return True
 
     def callback(self, ch, method, properties, body):
         """
