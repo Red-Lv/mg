@@ -49,6 +49,8 @@ class MsgDispatcher(RabbitMQClient):
 
         RabbitMQClient.exit(self)
 
+        self.publish_thread.join()
+
         return True
 
     def callback(self, ch, method, properties, body):
