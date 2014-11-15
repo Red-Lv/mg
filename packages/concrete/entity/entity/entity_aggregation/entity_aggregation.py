@@ -48,8 +48,6 @@ class EntityAggregation(RabbitMQClient):
 
     def exit(self):
 
-        self._dismissed.set()
-
         RabbitMQClient.exit(self)
 
         self.publish_thread.join()
