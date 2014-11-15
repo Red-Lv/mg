@@ -38,6 +38,8 @@ class EntityAggregation(RabbitMQClient):
         self.pool_size = int(self.config['entity_aggregation'].get('pool_size', self.pool_size))
         self.thread_pool = threadpool.ThreadPool(self.pool_size)
 
+        self.publish_thread = threading.Thread(target=self.publish)
+
         return True
 
     def __del__(self):
@@ -46,7 +48,11 @@ class EntityAggregation(RabbitMQClient):
 
     def exit(self):
 
+        self._dismissed.set()
+
         RabbitMQClient.exit(self)
+
+        self.publish_thread.join()
 
         return True
 
@@ -67,6 +73,9 @@ class EntityAggregation(RabbitMQClient):
 
         while True:
 
+            if self._dismissed.is_set():
+                break
+
             routing_key, msg = self.msg_to_publish.get()
             RabbitMQClient.publish(self, routing_key=routing_key, body=msg)
 
@@ -85,7 +94,7 @@ class EntityAggregation(RabbitMQClient):
         """
 
         # invoke the publish thread
-        threading.Thread(target=self.publish).start()
+        self.publish_thread.start()
 
         # invoke the consume thread
         self.consume()
