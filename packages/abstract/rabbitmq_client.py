@@ -5,8 +5,10 @@
 # author: lvleibing01
 # desc:
 
+import sys
 import pika
 import time
+import signal
 import threading
 
 from abstract_module import *
@@ -43,6 +45,9 @@ class RabbitMQClient(AbstractModule):
 
         self._dismissed = threading.Event()
 
+        signal.signal(signal.SIGINT, self.signal_handler)
+        signal.signal(signal.SIGTERM, self.signal_handler)
+
     def init(self, config_path=None):
 
         AbstractModule.init(self, config_path=config_path)
@@ -64,6 +69,12 @@ class RabbitMQClient(AbstractModule):
         self.producer_conn_check_thread.join()
 
         return True
+    
+    def signal_handler(self, signum, frame):
+        
+        self.exit()
+
+        sys.exit(0)
 
     def init_client(self):
         """
@@ -135,7 +146,7 @@ class RabbitMQClient(AbstractModule):
             with self.internal_lock:
                 self.producer_conn.process_data_events()
 
-            time.sleep(10)
+            time.sleep(1)
 
         return True
 
