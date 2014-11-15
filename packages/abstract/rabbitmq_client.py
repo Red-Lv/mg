@@ -6,6 +6,8 @@
 # desc:
 
 import pika
+import time
+import threading
 
 from abstract_module import *
 
@@ -36,6 +38,8 @@ class RabbitMQClient(AbstractModule):
         self.consumer_channel = None
         self.producer_channel = None
 
+        self.internal_lock = threading.Lock()
+
     def init(self, config_path=None):
 
         AbstractModule.init(self, config_path=config_path)
@@ -62,7 +66,7 @@ class RabbitMQClient(AbstractModule):
         self.port = int(self.config['rmq_client']['port'])
 
         self.consumer_conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, port=self.port))
-        self.producer_conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, port=self.port))
+        self.producer_conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, port=self.port, heartbeat_interval=5))
 
         # why just initialize producer client rather than both consumer & producer clients here ?
         # for if we initialize consumer client here, then the consumer will start consuming, which is not expected.
@@ -107,7 +111,18 @@ class RabbitMQClient(AbstractModule):
         self.producer_channel.exchange_declare(exchange=self.producer_exchange.exchange_name,
                                                type=self.producer_exchange.exchange_type)
 
+        threading.Thread(target=self._process_data_events).start()
+
         return True
+    
+    def _process_data_events(self):
+        """
+        """
+
+        while True:
+            with self.internal_lock:
+                self.producer_conn.process_data_events()
+            time.sleep(5)
 
     def callback(self, ch, method, properties, body):
         """
@@ -140,7 +155,8 @@ class RabbitMQClient(AbstractModule):
         if exchange is None:
             exchange = self.producer_exchange.exchange_name
 
-        self.producer_channel.basic_publish(exchange=exchange, routing_key=routing_key, body=body)
+        with self.internal_lock:
+            self.producer_channel.basic_publish(exchange=exchange, routing_key=routing_key, body=body)
 
         return True
 
