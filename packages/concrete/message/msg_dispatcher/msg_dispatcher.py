@@ -74,7 +74,11 @@ class MsgDispatcher(RabbitMQClient):
             if self._dismissed.is_set():
                 break
 
-            routing_key, msg = self.msg_to_publish.get()
+            try:
+                routing_key, msg = self.msg_to_publish.get(block=True, timeout=3)
+            except Queue.Empty as e:
+                continue
+
             RabbitMQClient.publish(self, routing_key=routing_key, body=msg)
 
             LOG_DEBUG('msg published: [routing_key: %s, body: %s]', routing_key, msg)
